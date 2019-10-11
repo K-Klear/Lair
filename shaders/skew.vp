@@ -1,0 +1,26 @@
+uniform highp mat4 view_proj;
+uniform highp mat4 normal;
+
+// positions are in world space
+attribute highp vec4 position;
+attribute mediump vec2 texcoord0;
+
+varying mediump vec2 var_texcoord0;
+
+void main()
+{
+    // How much we want to skew each axis by
+    float xSkew = 0.2;
+    float ySkew = 0.2;
+
+    // Create a transform that will skew our texture coords
+    mat4 trans = mat4(
+        1.0       , tan(xSkew), 0.0, 0.0,
+        tan(ySkew), 1.0,        0.0, 0.0,
+        0.0       , 0.0,        1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    );
+    
+    gl_Position = view_proj * trans * vec4(position.xyz, 1.0);
+    var_texcoord0 = texcoord0;
+}
