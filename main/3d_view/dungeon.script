@@ -21,7 +21,10 @@ local function wall_right(pos, depth)
 end
 
 function init(self)
+<<<<<<< HEAD
 	--[[
+=======
+>>>>>>> 417c7c44d5796350e09be2d2bc92f0c894aaa68a
 	wall_front(-2, 1)
 	wall_front(1, 1)
 	for x = 0, -3, -1 do
@@ -32,9 +35,12 @@ function init(self)
 	--wall_right(0, 0)
 	wall_front(-1, -3)
 	wall_front(-0, -3)
+<<<<<<< HEAD
 	--]]
 
 	wall_right(0, 0)
+=======
+>>>>>>> 417c7c44d5796350e09be2d2bc92f0c894aaa68a
 end
 
 
