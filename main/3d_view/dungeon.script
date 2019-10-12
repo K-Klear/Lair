@@ -16,15 +16,12 @@ end
 local function wall_right(pos, depth)
 	position = vmath.vector3(640 + 162 * (5/3)^depth + (pos * 243) * (5/3)^depth, 360, 0)
 	scale = vmath.vector3((5/3)^depth, (5/3)^depth, (5/3)^depth)
-	rot = vmath.quat_rotation_y(math.pi)
+	--rot = vmath.quat_rotation_y(math.pi)
 	factory.create("#wall_side", position, rot, nil, scale)
 end
 
 function init(self)
-<<<<<<< HEAD
 	--[[
-=======
->>>>>>> 417c7c44d5796350e09be2d2bc92f0c894aaa68a
 	wall_front(-2, 1)
 	wall_front(1, 1)
 	for x = 0, -3, -1 do
@@ -35,12 +32,9 @@ function init(self)
 	--wall_right(0, 0)
 	wall_front(-1, -3)
 	wall_front(-0, -3)
-<<<<<<< HEAD
 	--]]
 
-	wall_right(0, 0)
-=======
->>>>>>> 417c7c44d5796350e09be2d2bc92f0c894aaa68a
+	--wall_right(0, 0)
 end
 
 
