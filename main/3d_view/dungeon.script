@@ -1,40 +1,70 @@
 --pos, rot, pr, sc
 --local scale = 0.6
+local scale_multiplier = 25/9
+local depth_scale = 0.6
 
 local function wall_front(pos, depth)
-	position = vmath.vector3(640 + (pos * 243) * (5/3)^depth, 360, 0)
-	scale = vmath.vector3((5/3)^depth, (5/3)^depth, (5/3)^depth)
+	local position = vmath.vector3(640 + (pos * 675) * depth_scale^depth, 360, 1)
+	local distance = math.sqrt((2 * math.abs(pos))^2 + ((depth*2) + 1)^2)
+	--print(depth, pos, distance, (distance / 2) - 0.5)
+	distance = (distance / 2) - 0.5
+	print(pos, depth, distance)
+	--print(depth_scale^distance, depth_scale^depth)
+	local scale = vmath.vector3(depth_scale^distance, depth_scale^depth, depth_scale^depth) * scale_multiplier
+
+
+
+	
+	
 	factory.create("#wall_front", position, nil, nil, scale)
 end
 
 local function wall_left(pos, depth)
-	position = vmath.vector3(640 - 243 * (5/3)^depth + (pos * 243) * (5/3)^depth, 360, 0)
-	scale = vmath.vector3((5/3)^depth * 3, (5/3)^depth, (5/3)^depth)
+	local position = vmath.vector3(640 - 162 * depth_scale^depth + (pos * 243) * depth_scale^depth, 360, 0)
+	local scale = vmath.vector3(depth_scale^depth, depth_scale^depth, depth_scale^depth)
+	
+	position.x = position.x - 81 * depth_scale^depth
+	scale.x = scale.x * 3
+
+	position.x = position.x - 81 * depth_scale^depth
+	scale.x = scale.x * 5/3
+
+	
+
+	
 	factory.create("#wall_side", position, nil, nil, scale)
 end
 
-local function wall_right(pos, depth)
-	position = vmath.vector3(640 + 162 * (5/3)^depth + (pos * 243) * (5/3)^depth, 360, 0)
-	scale = vmath.vector3((5/3)^depth, (5/3)^depth, (5/3)^depth)
-	--rot = vmath.quat_rotation_y(math.pi)
-	factory.create("#wall_side", position, rot, nil, scale)
-end
-
 function init(self)
+	
+
 	--[[
-	wall_front(-2, 1)
+	--wall_front(-1, 1)
 	wall_front(1, 1)
-	for x = 0, -3, -1 do
-		wall_left(-1, x)
+	wall_front(0, -3)
+	wall_front(-1, -3)
+	wall_front(-1, -3)
+	--]]
+	wall_front(-1, 2)
+	wall_front(0, 2)
+	for depth = 0, 5 do
+		for pos = -4, 4 do
+			--wall_front(pos, depth)
+		end
+	end
+	
+	--[[
+	for x = -0, -3, -1 do
+		wall_left(-2, x)
 		wall_right(0, x)
 	end
 	--wall_left(0, 0)
 	--wall_right(0, 0)
-	wall_front(-1, -3)
-	wall_front(-0, -3)
-	--]]
+
+
 
 	--wall_right(0, 0)
+	--]]
 end
 
 
@@ -46,3 +76,4 @@ end
 function on_input(self, action_id, action)
 	
 end
+

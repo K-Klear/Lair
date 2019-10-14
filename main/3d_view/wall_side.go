@@ -2,8 +2,8 @@ embedded_components {
   id: "sprite"
   type: "sprite"
   data: "tile_set: \"/main/3d_view/dungeon.atlas\"\n"
-  "default_animation: \"wall_test\"\n"
-  "material: \"/shaders/skew.material\"\n"
+  "default_animation: \"wall_side\"\n"
+  "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""
   position {
