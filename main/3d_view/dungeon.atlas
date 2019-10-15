@@ -7,6 +7,12 @@ images {
 images {
   image: "/graphics/dungeon/wall_test.png"
 }
+images {
+  image: "/graphics/dungeon/wall_left.png"
+}
+images {
+  image: "/graphics/dungeon/wall_right.png"
+}
 margin: 5
 extrude_borders: 5
 inner_padding: 0

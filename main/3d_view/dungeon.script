@@ -2,69 +2,72 @@
 --local scale = 0.6
 local scale_multiplier = 25/9
 local depth_scale = 0.6
+local wall_x = 243
+local centre = vmath.vector3(640, 360, 0)
+
+local function get_x(pos, depth)
+	local mod = 0
+	local pos_x = 0
+	if pos < 0 then mod = 1 end
+	for x = 0 + mod, math.abs(pos) - 1 + mod do
+		pos_x = pos_x + wall_x * depth_scale^depth * scale_multiplier 
+	end
+	if pos < 0 then pos_x = -pos_x end
+	return pos_x - (wall_x * depth_scale^depth * scale_multiplier) / 2 
+end
 
 local function wall_front(pos, depth)
-	local position = vmath.vector3(640 + (pos * 675) * depth_scale^depth, 360, 1)
-	local distance = math.sqrt((2 * math.abs(pos))^2 + ((depth*2) + 1)^2)
-	--print(depth, pos, distance, (distance / 2) - 0.5)
-	distance = (distance / 2) - 0.5
-	print(pos, depth, distance)
-	--print(depth_scale^distance, depth_scale^depth)
-	local scale = vmath.vector3(depth_scale^distance, depth_scale^depth, depth_scale^depth) * scale_multiplier
-
-
-
-	
+	local pos_x = get_x(pos, depth)
+	local scale = vmath.vector3(depth_scale^depth, depth_scale^depth, depth_scale^depth) * scale_multiplier
+	local position = vmath.vector3(centre.x + pos_x, centre.y, 1 / (depth + 1))
 	
 	factory.create("#wall_front", position, nil, nil, scale)
 end
 
 local function wall_left(pos, depth)
-	local position = vmath.vector3(640 - 162 * depth_scale^depth + (pos * 243) * depth_scale^depth, 360, 0)
-	local scale = vmath.vector3(depth_scale^depth, depth_scale^depth, depth_scale^depth)
-	
-	position.x = position.x - 81 * depth_scale^depth
-	scale.x = scale.x * 3
+	local pos_x = get_x(pos, depth)
+	local size = get_x(pos, depth + 1) - pos_x
+	if size < 0 then return end
+	local scale = vmath.vector3(size / wall_x, depth_scale^depth * scale_multiplier, depth_scale^depth * scale_multiplier) 
+	local position = vmath.vector3(centre.x + pos_x, centre.y, 1 / (depth + 1))
+	factory.create("#wall_left", position, nil, nil, scale)
+end
 
-	position.x = position.x - 81 * depth_scale^depth
-	scale.x = scale.x * 5/3
+local function wall_right(pos, depth)
+	local pos_x = (get_x(pos + 1, depth + 1))
+	local size = get_x(pos + 1, depth) - pos_x
+	if size < 0 then return end
+	local scale = vmath.vector3(size / wall_x, depth_scale^depth * scale_multiplier, depth_scale^depth * scale_multiplier) 
+	local position = vmath.vector3(centre.x + pos_x, centre.y, 1 / (depth + 1))
 
-	
+	factory.create("#wall_right", position, nil, nil, scale)
+end
 
-	
-	factory.create("#wall_side", position, nil, nil, scale)
+local function draw_map()
+	local _, __, x_size, y_size = tilemap.get_bounds("/minimap#minimap")
+	local found = false
+	local player = {x, y}
+	for x = 1, x_size do
+		for y = 1, y_size do
+			if tilemap.get_tile("/minimap#minimap", "walls", x, y) == 2 then
+				player.x = x; player.y = y; found = true; break
+			end
+		end
+		if found then break end
+	end
+
+	for depth = player.y + 1, y_size do
+		for pos = 1, x_size do
+			if tilemap.get_tile("/minimap#minimap", "walls", pos, depth) == 1 and
+			tilemap.get_tile("/minimap#minimap", "walls", pos, depth - 1) == 0 then
+				wall_front(pos, depth - player.y - 1)
+			end
+		end
+	end
 end
 
 function init(self)
-	
-
-	--[[
-	--wall_front(-1, 1)
-	wall_front(1, 1)
-	wall_front(0, -3)
-	wall_front(-1, -3)
-	wall_front(-1, -3)
-	--]]
-	wall_front(-1, 2)
-	wall_front(0, 2)
-	for depth = 0, 5 do
-		for pos = -4, 4 do
-			--wall_front(pos, depth)
-		end
-	end
-	
-	--[[
-	for x = -0, -3, -1 do
-		wall_left(-2, x)
-		wall_right(0, x)
-	end
-	--wall_left(0, 0)
-	--wall_right(0, 0)
-
-
-
-	--wall_right(0, 0)
-	--]]
+	draw_map()
 end
 
 
@@ -76,4 +79,6 @@ end
 function on_input(self, action_id, action)
 	
 end
+
+
 

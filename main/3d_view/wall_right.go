@@ -2,7 +2,7 @@ embedded_components {
   id: "sprite"
   type: "sprite"
   data: "tile_set: \"/main/3d_view/dungeon.atlas\"\n"
-  "default_animation: \"wall_front\"\n"
+  "default_animation: \"wall_right\"\n"
   "material: \"/builtins/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""
