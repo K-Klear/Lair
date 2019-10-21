@@ -1,0 +1,37 @@
+uniform highp mat4 view_proj;
+
+// positions are in world space
+attribute highp vec4 position;
+attribute mediump vec2 texcoord0;
+
+uniform vec4 centre;
+
+varying mediump vec2 var_texcoord0;
+
+void main()
+{
+    if(position.x > centre.x)
+    {
+        if(position.y > centre.y)
+        {
+            gl_Position = view_proj * vec4(position.x, position.y, position.z, 1.0);
+        }
+        else
+        {
+            gl_Position = view_proj * vec4(position.x, position.y, position.z, 1.0);
+        }
+    }
+    else
+    {
+        if(position.y > centre.y)
+        {
+            gl_Position = view_proj * vec4(position.x, position.y - 40, position.z, 1.0);
+        }
+        else
+        {
+            gl_Position = view_proj * vec4(position.x, position.y + 0, position.z, 1.0);
+        }
+    }
+    //gl_Position = view_proj * vec4(position.xyz, 1.0);
+    var_texcoord0 = texcoord0;
+}

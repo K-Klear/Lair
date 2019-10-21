@@ -2,16 +2,22 @@ images {
   image: "/graphics/dungeon/wall_front.png"
 }
 images {
-  image: "/graphics/dungeon/wall_side.png"
-}
-images {
-  image: "/graphics/dungeon/wall_test.png"
-}
-images {
   image: "/graphics/dungeon/wall_left.png"
 }
 images {
   image: "/graphics/dungeon/wall_right.png"
+}
+images {
+  image: "/graphics/dungeon/wall_red_front.png"
+}
+images {
+  image: "/graphics/dungeon/wall_red_left.png"
+}
+images {
+  image: "/graphics/dungeon/wall_red_right.png"
+}
+images {
+  image: "/graphics/dungeon/wall_test.png"
 }
 margin: 5
 extrude_borders: 5

@@ -5,7 +5,7 @@ main_collection = /main/main.collectionc
 shared_state = 1
 
 [display]
-width = 1280
+width = 720
 height = 720
 
 [android]
@@ -14,8 +14,4 @@ input_method = HiddenInputField
 [project]
 title = Lair
 version = 0.0
-
-[graphics]
-default_texture_min_filter = linear
-default_texture_mag_filter = linear
 
