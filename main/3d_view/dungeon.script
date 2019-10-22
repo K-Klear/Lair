@@ -17,7 +17,7 @@ local function get_x(pos, depth)
 		pos_x = pos_x + wall_x * scale_multiplier / dist 
 	end
 	if pos < 0 then pos_x = -pos_x end
-	return pos_x - (wall_x * scale_multiplier / dist) / 2 
+	return pos_x -- - (wall_x * scale_multiplier / dist) / 2 
 end
 
 local function wall_front(pos, depth, texture)
@@ -30,7 +30,7 @@ local function wall_front(pos, depth, texture)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 	0.9 / (distance + 1))
 
 	table.insert(walls, factory.create("#wall_front", position, nil, nil, scale))
-	sprite.play_flipbook(msg.url(nil, walls[#walls], "sprite"), texture.."_front")
+	sprite.play_flipbook(msg.url(nil, walls[#walls], "front"), texture.."_front")
 end
 
 local function wall_left(pos, depth, texture)
@@ -95,6 +95,14 @@ end
 
 
 function init(self)
+	--go.animate("/wall_front", "position.x", go.PLAYBACK_LOOP_PINGPONG, 720, go.EASING_LINEAR, 6)
+	--wall_front(0, 1, "wall")
+	--wall_front(-1, 1, "wall")
+	--wall_front(-1, 1, "wall")
+	--wall_front(1, 1, "wall")
+	--wall_front(-1, 1, "wall")
+	--msg.post(walls[1], "front")
+	--msg.post(walls[2], "left")
 	--draw_map()
 end
 
@@ -107,6 +115,7 @@ end
 function on_input(self, action_id, action)
 	
 end
+
 
 
 

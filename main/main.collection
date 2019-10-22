@@ -1,10 +1,10 @@
 name: "main"
 instances {
-  id: "wall_right"
-  prototype: "/main/3d_view/wall_right.go"
+  id: "wall_front"
+  prototype: "/main/3d_view/wall_front.go"
   position {
-    x: 0.0
-    y: 0.0
+    x: 360.0
+    y: 360.0
     z: 0.0
   }
   rotation {

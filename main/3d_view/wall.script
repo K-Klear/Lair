@@ -1,0 +1,29 @@
+go.property("facing", hash("front"))
+
+function init(self)
+	local vector = go.get_position()
+	vector.x = (vector.x - 360) / 360
+	vector.y = (vector.y - 360) / 360
+	sprite.set_constant("#left", "centre", vmath.vector4(vector.x, vector.y, 0, 0))
+	msg.post("#front", "disable")
+	--msg.post("#left", "disable")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("left") then
+		self.facing = message_id
+		msg.post("#front", "disable")
+		msg.post("#left", "enable")
+	elseif message_id == hash("front") then
+		self.facing = message_id
+		msg.post("#front", "enable")
+		msg.post("#left", "disable")
+	end
+end
+
+function update(self, dt)
+	local vector = go.get_position()
+	vector.x = (vector.x - 360) / 360
+	vector.y = (vector.y - 360) / 360
+	sprite.set_constant("#left", "centre", vmath.vector4(vector.x, vector.y, 0, 0))
+end
