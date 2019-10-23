@@ -1,0 +1,21 @@
+local player = require("main/player_info")
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("up") and action.pressed then
+		player.y = player.y + 1
+		msg.post("/dungeon", "update")
+	elseif action_id == hash("down") and action.pressed then
+		player.y = player.y - 1
+		msg.post("/dungeon", "update")
+	elseif action_id == hash("left") and action.pressed then
+		player.x = player.x - 1
+		msg.post("/dungeon", "update")
+	elseif action_id == hash("right") and action.pressed then
+		player.x = player.x + 1
+		msg.post("/dungeon", "update")
+	end
+end

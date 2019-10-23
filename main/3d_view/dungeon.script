@@ -6,6 +6,8 @@ local scale_multiplier = 125 / 27
 local wall_x = 243
 local centre = vmath.vector3(360, 360, 0)
 
+local visible_range = 15
+
 local function get_x(pos, depth)
 	local mod = 0
 	local pos_x = 0
@@ -24,9 +26,7 @@ local function wall_front(pos, depth, texture)
 	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1) 
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 	0.9 / (distance + 1))
-
-	table.insert(walls, factory.create("#wall", position, nil, nil, scale))
-	sprite.play_flipbook(msg.url(nil, walls[#walls], "sprite"), texture)
+	table.insert(walls, {go = factory.create("#wall", position, nil, {texture = texture}, scale), pos = pos, depth = depth})
 end
 
 local function wall_left(pos, depth, texture)
@@ -37,9 +37,8 @@ local function wall_left(pos, depth, texture)
 	local scale = vmath.vector3(size / wall_x, scale_multiplier / dist, 1) 
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
-	local skew =  1 - (dist / ((depth + 1) * 2 - 1))
-	table.insert(walls, factory.create("#wall", position, nil, {skew_y = skew / 3}, scale))
-	sprite.play_flipbook(msg.url(nil, walls[#walls], "sprite"), texture)
+	local skew = (1 - (dist / ((depth + 1) * 2 - 1))) / 3
+	table.insert(walls, {go = factory.create("#wall", position, nil, {skew_y = skew, texture = texture}, scale), pos = pos, depth = depth})
 end
 
 local function wall_right(pos, depth, texture)
@@ -50,77 +49,59 @@ local function wall_right(pos, depth, texture)
 	local scale = vmath.vector3(size / wall_x, scale_multiplier / dist, 1) 
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
-	local skew =  1 - (dist / ((depth + 1) * 2 - 1))
-	--skew = 0
-	table.insert(walls, factory.create("#wall", position, nil, {skew_x = skew / 3}, scale))
-	sprite.play_flipbook(msg.url(nil, walls[#walls], "sprite"), texture)
-	--[[
-	local pos_x = get_x(pos + 1, depth)
-	local size = get_x(pos + 1, depth - 1) - pos_x
-	local dist = depth * 2 - 1
-	if size < 0 then return end
-	local scale = vmath.vector3(size / wall_x, scale_multiplier / dist, 1) 
-	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
-
-	table.insert(walls, factory.create("#wall", position, nil, nil, scale))
-	sprite.play_flipbook(msg.url(nil, walls[#walls], "sprite"), texture)
-	--]]
+	local skew =  (1 - (dist / ((depth + 1) * 2 - 1))) / 3
+	table.insert(walls, {go = factory.create("#wall", position, nil, {skew_x = skew, texture = texture}, scale), pos = pos, depth = depth})
 end
 
 local tiles = {
-	{wall = true, texture = "wall"},
+	{wall = true, texture = hash("wall")},
 	{wall = false},
-	{wall = true, texture = "wall_red"},
+	{wall = true, texture = hash("wall_red")},
 	{wall = false}
 }
 tiles[0] = {}
 
-local function draw_map()
-	local _, __, x_size, y_size = tilemap.get_bounds("/minimap#minimap")
-	for depth = player.y, y_size do
-		for pos = 1, x_size do
-			local tile = tilemap.get_tile("/minimap#minimap", "walls", pos, depth)
+local function update_view()
+	for key, val in ipairs(walls) do
+		msg.post(val.go, "delete")
+	end
+	walls = {}
+	local x_min, y_min, x_size, y_size = tilemap.get_bounds("/minimap#minimap")
+	for depth = 0, math.min(visible_range, y_size - player.y - 1) do --player.y, y_size do
+		local pos_range = math.ceil(depth * 0.6) + 1
+		for pos = math.max(-pos_range, x_min - player.x), math.min(pos_range, x_size - player.x) do --1, x_size do
+			local tile = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y)
+			print(pos + player.x, depth + player.y, x_min, y_min, x_size, y_size)
 			if tiles[tile].wall == true then
-				local tile_front = tilemap.get_tile("/minimap#minimap", "walls", pos, depth - 1)
-				local tile_left = tilemap.get_tile("/minimap#minimap", "walls", pos - 1, depth)
-				local tile_right = tilemap.get_tile("/minimap#minimap", "walls", pos + 1, depth)
+				local tile_front = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y - 1)
+				local tile_left = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x - 1, depth + player.y)
+				local tile_right = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x + 1, depth + player.y)
 				if tile_front and not tiles[tile_front].wall then
-					wall_front(pos - player.x, depth - player.y, tiles[tile].texture)
+					wall_front(pos, depth, tiles[tile].texture)
 				end
 				if tile_left and not tiles[tile_left].wall then
-					wall_right(pos - player.x - 1, depth - player.y + 1, tiles[tile].texture)
+					wall_right(pos - 1, depth + 1, tiles[tile].texture)
 				end
 				if tile_right and not tiles[tile_right].wall then
-					wall_left(pos - player.x + 1, depth - player.y + 1, tiles[tile].texture)
+					wall_left(pos + 1, depth + 1, tiles[tile].texture)
 				end
 			end
 		end
 	end
-
 end
 
 
 
 function init(self)
-	
-	--wall_front(0, 1, "wall")
-	--wall_left(-1, 4, "wall")
-	--wall_front(-1, 1, "wall")
-	--wall_front(-1, 1, "wall")
-	--wall_front(1, 1, "wall")
-	--wall_front(-1, 1, "wall")
-	--msg.post(walls[1], "front")
-	--msg.post(walls[2], "left")
-	draw_map()
-
-	
+	update_view()
 end
 
 
 
 function on_message(self, message_id, message, sender)
-	
+	if message_id == hash("update") then
+		update_view()
+	end
 end
 
 function on_input(self, action_id, action)

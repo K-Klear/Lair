@@ -1,12 +1,15 @@
 go.property("skew_x", 0)
 go.property("skew_y", 0)
+go.property("texture", hash("wall"))
 
 function init(self)
-	
+	sprite.play_flipbook("#sprite", self.texture)
 end
 
 function on_message(self, message_id, message, sender)
-
+	if message_id == hash("delete") then
+		go.delete()
+	end
 end
 
 function update(self, dt)
