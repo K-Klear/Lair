@@ -1,20 +1,8 @@
 images {
-  image: "/graphics/dungeon/wall_front.png"
+  image: "/graphics/dungeon/wall.png"
 }
 images {
-  image: "/graphics/dungeon/wall_left.png"
-}
-images {
-  image: "/graphics/dungeon/wall_right.png"
-}
-images {
-  image: "/graphics/dungeon/wall_red_front.png"
-}
-images {
-  image: "/graphics/dungeon/wall_red_left.png"
-}
-images {
-  image: "/graphics/dungeon/wall_red_right.png"
+  image: "/graphics/dungeon/wall_red.png"
 }
 images {
   image: "/graphics/dungeon/wall_test.png"

@@ -3,6 +3,7 @@ uniform highp mat4 view;
 uniform highp mat4 proj;
 uniform highp mat4 normal;
 uniform highp vec4 centre;
+uniform highp vec4 skew;
 
 // positions are in world space
 attribute highp vec4 position;
@@ -12,36 +13,33 @@ varying mediump vec2 var_texcoord0;
 
 void main()
 {   
-    vec4 cent = centre;
-    
-    float l = -5.0;
-    float r = 1.0;
-    float t = 1.0;
-    float b = -1.0;
-    float f = -5.0;
-    float n = 5.0;
-
-    //mat4 trans = mat4(
-    //    2/(r-l), 0.0, 0.0, -(r+l)/(r-l),
-    //    0.0, 2/(t-b), 0.0, -(t+b)/(t-b),
-    //    0.0, 0.0, -2/(f-n), -(f+n)/(f-n),
-    //    0.0, 0.0, 0.0, 1.0
-    //);
-
-    mat4 trans = mat4(
-        (2*n)/(r-l), 0.0, (r+l)/(r-l), 0.0,
-        0.0, (2*n)/(t-b), (t+n)/(t-b), 0.0,
-        0.0, 0.0, -(f+n)/(f-n), -(2*f*n)/(f-n),
-        0.0, 0.0, -1, 0.0
-    );
-
-
-    
-
-    gl_Position = trans * view_proj * vec4(position.xyz, 1.0);
-    //gl_Position = gl_Position * trans;
-    //gl_Position = gl_Position * vec4(position.xyz, 1.0);
-
+    gl_Position = view_proj * vec4(position.x, position.y, position.z, 1.0);
+    if(position.x > centre.x)
+    {
+        if(position.y > centre.y)
+        // top right
+        {
+            gl_Position.y = gl_Position.y - skew.y;
+        }
+        else
+        //bottom right
+        {
+            gl_Position.y = gl_Position.y + skew.y;
+        }
+    }
+    else
+    {
+        if(position.y > centre.y)
+        // top left
+        {
+            gl_Position.y = gl_Position.y - skew.x;
+        }
+        else
+        // bottom left
+        {
+            gl_Position.y = gl_Position.y + skew.x;
+        }
+    }
     var_texcoord0 = texcoord0;
 }
 

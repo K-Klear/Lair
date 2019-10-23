@@ -1,24 +1,4 @@
 name: "main"
-instances {
-  id: "wall_front"
-  prototype: "/main/3d_view/wall_front.go"
-  position {
-    x: 360.0
-    y: 360.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
 scale_along_z: 0
 embedded_instances {
   id: "dungeon"
@@ -38,45 +18,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"wall_front\"\n"
+  "  id: \"wall\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/wall_front.go\\\"\\n"
-  "load_dynamically: false\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "embedded_components {\n"
-  "  id: \"wall_left\"\n"
-  "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/wall_left.go\\\"\\n"
-  "load_dynamically: false\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "embedded_components {\n"
-  "  id: \"wall_right\"\n"
-  "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/wall_right.go\\\"\\n"
+  "  data: \"prototype: \\\"/main/3d_view/wall.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -93,8 +37,8 @@ embedded_instances {
   "}\n"
   ""
   position {
-    x: 549.0
-    y: 203.0
+    x: 0.0
+    y: 0.0
     z: 0.0
   }
   rotation {
