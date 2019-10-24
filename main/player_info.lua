@@ -1,7 +1,8 @@
-local F = {}
-
-F.x = 10
-F.y = 4
-F.facing = hash("north")
+local F = {
+	x = 10,
+	y = 4,
+	facing = hash("N"),
+	moving = false
+}
 
 return F
