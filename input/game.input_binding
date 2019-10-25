@@ -8,15 +8,39 @@ key_trigger {
 }
 key_trigger {
   input: KEY_LEFT
-  action: "left"
+  action: "turn_left"
 }
 key_trigger {
   input: KEY_RIGHT
-  action: "right"
+  action: "turn_right"
 }
 key_trigger {
   input: KEY_SPACE
   action: "turn"
+}
+key_trigger {
+  input: KEY_W
+  action: "up"
+}
+key_trigger {
+  input: KEY_S
+  action: "down"
+}
+key_trigger {
+  input: KEY_A
+  action: "turn_left"
+}
+key_trigger {
+  input: KEY_D
+  action: "turn_right"
+}
+key_trigger {
+  input: KEY_Q
+  action: "slide_left"
+}
+key_trigger {
+  input: KEY_E
+  action: "slide_right"
 }
 mouse_trigger {
   input: MOUSE_BUTTON_1

@@ -5,10 +5,42 @@ local walls = {}
 local scale_multiplier = 13
 local wall_x = 243
 local centre = vmath.vector3(360, 360, 0)
-local x_min, y_min, x_size, y_size
 
 local visible_range = 20
 local step_time = 1
+
+local map = {}
+local tiles = {}
+tiles[1] = {wall = true, texture = hash("wall")}
+tiles[3] = {wall = true, texture = hash("wall_red")}
+
+local function load_tilemap()
+	map = {}
+	map.min_x, map.min_y, map.max_x, map.max_y = tilemap.get_bounds("/minimap#minimap")
+	local player_x, player_y
+	local found = false
+	for _x = map.min_x, map.max_x do
+		for _y = map.min_y, map.max_y do
+			if tilemap.get_tile("/minimap#minimap", "player", _x, _y) == 5 then
+				player_x = _x; player_y = _y; break
+			end
+		end
+		if found then break end
+	end
+	for _x = map.min_x, map.max_x do
+		map[_x - player_x] = {}
+		for _y = map.min_y, map.max_y do
+			local tile = tilemap.get_tile("/minimap#minimap", "walls", _x, _y)
+			if tiles[tile] then
+				map[_x - player_x][_y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture}
+			end
+		end
+	end
+	map.min_y = map.min_y - player_y + 1; map.max_y = map.max_y - player_y + 1
+	map.min_x = map.min_x - player_x; map.max_x = map.max_x - player_x
+end
+
+local function move_tilemap()
 
 local function get_x(pos, depth)
 	local mod = 0
@@ -55,100 +87,39 @@ local function wall_right(pos, depth)
 	return position, scale, skew
 end
 
-local tiles = {
-	{wall = true, texture = hash("wall")},
-	{wall = false},
-	{wall = true, texture = hash("wall_red")},
-	{wall = false}
-}
-tiles[0] = {}
-
-local draw_walls = {}
-
-function draw_walls.N()
-	for depth = 0, math.min(visible_range, y_size - player.y - 1) do
+local function draw_walls()
+	for depth = 0, math.min(visible_range, map.max_x) do
 		local pos_range = math.ceil((depth + 1) * 0.6) + 1
-		for pos = math.max(-pos_range, x_min - player.x), math.min(pos_range, x_size - player.x) do
-			local tile = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y - 1)
-			if tiles[tile].wall == true then
-				local tile_front = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y - 2)
-				local tile_left = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x - 1, depth + player.y - 1)
-				local tile_right = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x + 1, depth + player.y - 1)
-				if tile_front and not tiles[tile_front].wall then
+		for pos = math.max(-pos_range, map.min_x), math.min(pos_range, map.max_x) do
+			if map[pos][depth] and map[pos][depth].wall then
+				if not map[pos][depth-1] or not map[pos][depth-1].wall then
 					if not (depth == 0) or not (pos == 0) then
 						local position, scale = wall_front(pos, depth)
 						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {texture = tiles[tile].texture}, scale),
+							go = factory.create("#wall", position, nil, {texture = map[pos][depth].texture}, scale),
 							pos = pos,
 							depth = depth,
 							facing = hash("front")
 						})
 					end
 				end
-				if tile_left and not tiles[tile_left].wall then
-					local position, scale, skew = wall_right(pos - 1, depth + 1)
+				if not map[pos-1][depth] or not map[pos-1][depth].wall then
+					local position, scale, skew = wall_right(pos-1, depth+1)
 					if position then
 						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {skew_x = skew, texture = tiles[tile].texture}, scale),
+							go = factory.create("#wall", position, nil, {skew_x = skew, texture = map[pos][depth].texture}, scale),
 							pos = pos,
 							depth = depth,
 							facing = hash("right")
 						})
 					end
 				end
-				if tile_right and not tiles[tile_right].wall then
+				if not map[pos+1][depth] or not map[pos+1][depth].wall then
 					local position, scale, skew = wall_left(pos + 1, depth + 1)
 					if position then
 						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {skew_y = skew, texture = tiles[tile].texture}, scale),
+							go = factory.create("#wall", position, nil, {skew_y = skew, texture = map[pos][depth].texture}, scale),
 							pos = pos,
-							depth = depth,
-							facing = hash("left")
-						})
-					end
-				end
-			end
-		end
-	end
-end
-
-function draw_walls.S()
-	for depth = 0, math.min(visible_range, player.y) do
-		local pos_range = math.ceil((depth + 1) * 0.6) + 1
-		for pos = math.max(-pos_range, x_min - player.x), math.min(pos_range, x_size - player.x) do
-			local tile = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, player.y - depth + 1)
-			if tiles[tile].wall == true then
-				local tile_front = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, player.y - depth - 1)
-				local tile_left = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x - 1, player.y - depth + 2)
-				local tile_right = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x + 1, player.y - depth + 2)
-				if tile_front and not tiles[tile_front].wall then
-					if not (depth == 0) or not (pos == 0) then
-						local position, scale = wall_front(-pos, depth)
-						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {texture = tiles[tile].texture}, scale),
-							pos = -pos,
-							depth = depth,
-							facing = hash("front")
-						})
-					end
-				end
-				if tile_left and not tiles[tile_left].wall then
-					local position, scale, skew = wall_right(-pos - 1, depth + 1)
-					if position then
-						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {skew_x = skew, texture = tiles[tile].texture}, scale),
-							pos = -pos,
-							depth = depth,
-							facing = hash("right")
-						})
-					end
-				end
-				if tile_right and not tiles[tile_right].wall then
-					local position, scale, skew = wall_left(-pos + 1, depth + 1)
-					if position then
-						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {skew_y = skew, texture = tiles[tile].texture}, scale),
-							pos = -pos,
 							depth = depth,
 							facing = hash("left")
 						})
@@ -164,7 +135,7 @@ local function update_view()
 		msg.post(val.go, "delete")
 	end
 	walls = {}
-	draw_walls[player.facing]()
+	draw_walls()
 end
 
 local move = {}
@@ -319,11 +290,10 @@ end
 
 
 function init(self)
-	x_min, y_min, x_size, y_size = tilemap.get_bounds("/minimap#minimap")
+	map.min_x, map.min_y, map.max_x, map.max_y = tilemap.get_bounds("/minimap#minimap")
+	load_tilemap()
 	update_view()
 end
-
-
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("update") then
