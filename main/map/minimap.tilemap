@@ -5,15 +5,29 @@ layers {
   is_visible: 1
   cell {
     x: 0
+    y: -4
+    tile: 3
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 0
     y: 0
     tile: 3
     h_flip: 0
     v_flip: 0
   }
   cell {
-    x: 9
+    x: 8
     y: 3
-    tile: 1
+    tile: 0
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 10
+    y: 3
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -25,9 +39,9 @@ layers {
     v_flip: 0
   }
   cell {
-    x: 11
+    x: 10
     y: 4
-    tile: 0
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -48,7 +62,21 @@ layers {
   cell {
     x: 11
     y: 5
-    tile: 0
+    tile: 2
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 12
+    y: 5
+    tile: 2
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 13
+    y: 5
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -60,9 +88,9 @@ layers {
     v_flip: 0
   }
   cell {
-    x: 11
+    x: 13
     y: 6
-    tile: 0
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -74,79 +102,79 @@ layers {
     v_flip: 0
   }
   cell {
-    x: 9
+    x: 13
     y: 7
     tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
-    x: 11
-    y: 7
-    tile: 0
-    h_flip: 0
-    v_flip: 0
-  }
-  cell {
     x: 8
     y: 8
-    tile: 0
-    h_flip: 0
-    v_flip: 0
-  }
-  cell {
-    x: 11
-    y: 8
-    tile: 0
-    h_flip: 0
-    v_flip: 0
-  }
-  cell {
-    x: 8
-    y: 9
     tile: 0
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 10
-    y: 9
-    tile: 0
+    y: 8
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 11
-    y: 9
-    tile: 0
+    y: 8
+    tile: 2
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 12
+    y: 8
+    tile: 2
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 13
+    y: 8
+    tile: 2
+    h_flip: 0
+    v_flip: 0
+  }
+  cell {
+    x: 7
+    y: 10
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 8
-    y: 11
-    tile: 0
+    y: 10
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 9
-    y: 11
-    tile: 0
+    y: 10
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 10
-    y: 11
-    tile: 0
+    y: 10
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 11
-    y: 11
-    tile: 0
+    y: 10
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -154,6 +182,18 @@ layers {
     x: 23
     y: 25
     tile: 3
+    h_flip: 0
+    v_flip: 0
+  }
+}
+layers {
+  id: "player"
+  z: 0.0
+  is_visible: 1
+  cell {
+    x: 9
+    y: 3
+    tile: 1
     h_flip: 0
     v_flip: 0
   }

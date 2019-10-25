@@ -2,7 +2,7 @@ local player = require("main/player_info")
 
 local walls = {}
 
-local scale_multiplier = 8
+local scale_multiplier = 13
 local wall_x = 243
 local centre = vmath.vector3(360, 360, 0)
 
@@ -69,13 +69,13 @@ local function update_view()
 	walls = {}
 	local x_min, y_min, x_size, y_size = tilemap.get_bounds("/minimap#minimap")
 	for depth = 0, math.min(visible_range, y_size - player.y - 1) do
-		local pos_range = math.ceil(depth * 0.6) + 1
+		local pos_range = math.ceil((depth + 1) * 0.6) + 1
 		for pos = math.max(-pos_range, x_min - player.x), math.min(pos_range, x_size - player.x) do
-			local tile = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y)
+			local tile = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y - 1)
 			if tiles[tile].wall == true then
-				local tile_front = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y - 1)
-				local tile_left = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x - 1, depth + player.y)
-				local tile_right = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x + 1, depth + player.y)
+				local tile_front = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x, depth + player.y - 2)
+				local tile_left = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x - 1, depth + player.y - 1)
+				local tile_right = tilemap.get_tile("/minimap#minimap", "walls", pos + player.x + 1, depth + player.y - 1)
 				if tile_front and not tiles[tile_front].wall then
 					if not (depth == 0) or not (pos == 0) then
 						local position, scale = wall_front(pos, depth)
@@ -132,7 +132,7 @@ local function move_forward()
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
 			end
 		end
-		if position then
+		if position and val.depth > 0 then
 			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, step_time)
 			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
 		end
