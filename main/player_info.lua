@@ -1,7 +1,7 @@
 local F = {
 	x = 10,
-	y = 4,
-	facing = hash("N"),
+	y = 10,
+	facing = ("N"),
 	moving = false
 }
 

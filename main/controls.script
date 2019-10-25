@@ -2,34 +2,57 @@ local player = require("main/player_info")
 
 function init(self)
 	msg.post(".", "acquire_input_focus")
+	set_player_position(player.x, player.y)
 end
 
-
+function set_player_position(x, y)
+	local tiles = {N = 5, E = 6, W = 7, S = 8}
+	tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
+	player.x = x; player.y = y
+	tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, tiles[player.facing])
+end
+	
 
 function on_input(self, action_id, action)
+	local dir = {
+		N = {
+			up = {dir = hash("forward"), x = 0, y = 1},
+			down = {dir = hash("back"), x = 0, y = -1},
+			left = {dir = hash("left"), x = -1, y = 0},
+			right = {dir = hash("right"), x = 1, y = 0}
+		},
+		S = {
+			up = {dir = hash("forward"), x = 0, y = -1},
+			down = {dir = hash("back"), x = 0, y = 1},
+			left = {dir = hash("left"), x = 1, y = 0},
+			right = {dir = hash("right"), x = -1, y = 0}
+		},
+	}
+
+	
 	if action_id == hash("up") and not player.moving then
 		player.moving = true
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
-		player.y = player.y + 1
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 2)
-		msg.post("/dungeon", "forward")
+		set_player_position(player.x + dir[player.facing].up.x, player.y + dir[player.facing].up.y)
+		msg.post("/dungeon", dir[player.facing].up.dir)
 	elseif action_id == hash("down") and not player.moving then
 		player.moving = true
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
-		player.y = player.y - 1
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 2)
-		msg.post("/dungeon", "back")
-	elseif action_id == hash("left") and action.pressed then
+		set_player_position(player.x + dir[player.facing].down.x, player.y + dir[player.facing].down.y)
+		msg.post("/dungeon", dir[player.facing].down.dir)
+	elseif action_id == hash("left") and not player.moving then
 		player.moving = true
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
-		player.x = player.x - 1
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 2)
-		msg.post("/dungeon", "left")
-	elseif action_id == hash("right") and action.pressed then
+		set_player_position(player.x + dir[player.facing].left.x, player.y + dir[player.facing].left.y)
+		msg.post("/dungeon", dir[player.facing].left.dir)
+	elseif action_id == hash("right") and not player.moving then
 		player.moving = true
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
-		player.x = player.x + 1
-		tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 2)
-		msg.post("/dungeon", "right")
+		set_player_position(player.x + dir[player.facing].right.x, player.y + dir[player.facing].right.y)
+		msg.post("/dungeon", dir[player.facing].right.dir)
+	elseif action_id == hash("turn") and action.pressed then
+		if player.facing == "N" then
+			player.facing = "S"
+		else
+			player.facing = "N"
+		end
+		set_player_position(player.x, player.y)
+		msg.post("/dungeon", "update")
 	end
 end
