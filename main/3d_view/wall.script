@@ -15,8 +15,8 @@ function on_message(self, message_id, message, sender)
 end
 
 function update(self, dt)
-	local scale = go.get_scale()
 	--sprite.set_constant("#sprite", "skew", vmath.vector4(self.skew_x * scale.y, self.skew_y * scale.y, 0, 0))
-	local vector = go.get_position()
-	sprite.set_constant("#sprite", "centre", vmath.vector4(vector.x + (121.5 * scale.x), vector.y, 0, 0))
+	local scale = go.get_scale()
+	local position = go.get_position()
+	go.set("#sprite", "centre", vmath.vector4(position.x + (256 * scale.x), position.y, position.z, 0))
 end

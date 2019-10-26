@@ -17,28 +17,16 @@ void main()
     if(position.x > centre.x)
     {
         if(position.y > centre.y)
-        // top right
-        {
-            gl_Position.y = gl_Position.y - skew.y;
-        }
+        {gl_Position.y = gl_Position.y - skew.y;} // top right
         else
-        //bottom right
-        {
-            gl_Position.y = gl_Position.y + skew.y;
-        }
+        {gl_Position.y = gl_Position.y + skew.y;} // bottom right
     }
     else
     {
         if(position.y > centre.y)
-        // top left
-        {
-            gl_Position.y = gl_Position.y - skew.x;
-        }
+        {gl_Position.y = gl_Position.y - skew.x;} // top left
         else
-        // bottom left
-        {
-            gl_Position.y = gl_Position.y + skew.x;
-        }
+        {gl_Position.y = gl_Position.y + skew.x;} // bottom left
     }
     var_texcoord0 = texcoord0;
 }
