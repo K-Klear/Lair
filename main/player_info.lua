@@ -2,7 +2,8 @@ local F = {
 	x = 10,
 	y = 10,
 	facing = ("N"),
-	moving = false
+	moving = false,
+	sight_range = 1/6
 }
 
 return F

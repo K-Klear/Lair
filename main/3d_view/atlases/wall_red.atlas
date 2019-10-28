@@ -1,0 +1,6 @@
+images {
+  image: "/graphics/dungeon/wall_red.png"
+}
+margin: 0
+extrude_borders: 0
+inner_padding: 0

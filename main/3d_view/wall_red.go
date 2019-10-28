@@ -16,8 +16,8 @@ components {
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "tile_set: \"/main/3d_view/atlases/wall.atlas\"\n"
-  "default_animation: \"wall\"\n"
+  data: "tile_set: \"/main/3d_view/atlases/wall_red.atlas\"\n"
+  "default_animation: \"wall_red\"\n"
   "material: \"/graphics/shaders/skew.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""

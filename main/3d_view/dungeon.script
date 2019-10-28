@@ -7,14 +7,14 @@ local scale_multiplier = 3100 / wall_x
 
 local centre = vmath.vector3(360, 360, 0)
 
-local visible_range = 20
+local render_range = 20
 local step_time = 0.4
 
 local map = {}
 local map_bounds = {}
 local tiles = {}
-tiles[1] = {wall = true, texture = hash("wall")}
-tiles[3] = {wall = true, texture = hash("wall_red")}
+tiles[1] = {wall = true, texture = "#wall"}
+tiles[3] = {wall = true, texture = "#wall_red"}
 
 local function load_tilemap()
 	map = {}
@@ -60,7 +60,9 @@ local function wall_front(pos, depth, facing)
 	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1) 
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 	0.9 / (distance + 1))
-	return position, scale
+	local shade = 1 - (depth - 1) * player.sight_range
+	shade = vmath.vector4(shade, shade, 1, 1)
+	return position, scale, shade
 end
 
 local function wall_left(pos, depth)
@@ -72,7 +74,9 @@ local function wall_left(pos, depth)
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
 	local skew = (1 - (dist / ((depth + 1) * 2 - 1))) / 1.4
-	return position, scale, skew
+	local shade = 1 - (depth - 1) * player.sight_range
+	shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
+	return position, scale, shade, skew
 end
 
 local function wall_right(pos, depth)
@@ -84,7 +88,9 @@ local function wall_right(pos, depth)
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
 	local skew =  (1 - (dist / ((depth + 1) * 2 - 1))) / 1.4
-	return position, scale, skew
+	local shade = 1 - (depth - 1) * player.sight_range
+	shade = vmath.vector4(shade, shade + player.sight_range, 1, 1)
+	return position, scale, shade, skew
 end
 
 local function update_view()
@@ -92,15 +98,15 @@ local function update_view()
 		msg.post(val.go, "delete")
 	end
 	walls = {}
-	for depth = 0, math.min(visible_range, map_bounds.max_y) do
+	for depth = 0, math.min(render_range, map_bounds.max_y) do
 		local pos_range = math.ceil((depth + 1) * 0.6) + 1
 		for pos = math.max(-pos_range, map_bounds.min_x), math.min(pos_range, map_bounds.max_x) do
 			if map[pos][depth] and map[pos][depth].wall then
 				if not map[pos][depth-1] or not map[pos][depth-1].wall then
 					if not (depth == 0) or not (pos == 0) then
-						local position, scale = wall_front(pos, depth)
+						local position, scale, shade = wall_front(pos, depth)
 						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {texture = map[pos][depth].texture}, scale),
+							go = factory.create(map[pos][depth].texture, position, nil, {shade = shade}, scale),
 							pos = pos,
 							depth = depth,
 							facing = hash("front")
@@ -108,10 +114,10 @@ local function update_view()
 					end
 				end
 				if not map[pos-1][depth] or not map[pos-1][depth].wall then
-					local position, scale, skew = wall_right(pos-1, depth+1)
+					local position, scale, shade, skew = wall_right(pos-1, depth+1)
 					if position then
 						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {skew_x = skew, texture = map[pos][depth].texture}, scale),
+							go = factory.create(map[pos][depth].texture, position, nil, {skew_x = skew, shade = shade}, scale),
 							pos = pos,
 							depth = depth,
 							facing = hash("right")
@@ -119,10 +125,10 @@ local function update_view()
 					end
 				end
 				if not map[pos+1][depth] or not map[pos+1][depth].wall then
-					local position, scale, skew = wall_left(pos + 1, depth + 1)
+					local position, scale, shade, skew = wall_left(pos + 1, depth + 1)
 					if position then
 						table.insert(walls, {
-							go = factory.create("#wall", position, nil, {skew_y = skew, texture = map[pos][depth].texture}, scale),
+							go = factory.create(map[pos][depth].texture, position, nil, {skew_y = skew, shade = shade}, scale),
 							pos = pos,
 							depth = depth,
 							facing = hash("left")
@@ -178,17 +184,17 @@ local move = {}
 
 function move.forward()
 	for key, val in ipairs(walls) do
-		local position, scale, skew
+		local position, scale, shade, skew
 		if val.facing == hash("front") then
-			position, scale = wall_front(val.pos, val.depth - 1)
+			position, scale, shade = wall_front(val.pos, val.depth - 1)
 		elseif val.facing == hash("left") then
-			position, scale, skew = wall_left(val.pos + 1, val.depth)
+			position, scale, shade, skew = wall_left(val.pos + 1, val.depth)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
 			end
 		elseif val.facing == hash("right") then
-			position, scale, skew = wall_right(val.pos - 1, val.depth)
+			position, scale, shade, skew = wall_right(val.pos - 1, val.depth)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
@@ -204,17 +210,17 @@ end
 
 function move.back()
 	for key, val in ipairs(walls) do
-		local position, scale, skew
+		local position, scale, shade, skew
 		if val.facing == hash("front") then
-			position, scale = wall_front(val.pos, val.depth + 1)
+			position, scale, shade = wall_front(val.pos, val.depth + 1)
 		elseif val.facing == hash("left") then
-			position, scale, skew = wall_left(val.pos + 1, val.depth + 2)
+			position, scale, shade, skew = wall_left(val.pos + 1, val.depth + 2)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
 			end
 		elseif val.facing == hash("right") then
-			position, scale, skew = wall_right(val.pos - 1, val.depth + 2)
+			position, scale, shade, skew = wall_right(val.pos - 1, val.depth + 2)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
@@ -233,10 +239,10 @@ function move.left()
 		local position, scale, skew
 		if val.facing == hash("front") then
 			if not (val.depth == 0) or not (math.abs(val.pos) == 1) then
-				position, scale = wall_front(val.pos + 1, val.depth)
+				position, scale, shade = wall_front(val.pos + 1, val.depth)
 			end
 		elseif val.facing == hash("left") then
-			position, scale, skew = wall_left(val.pos + 2, val.depth + 1)
+			position, scale, shade, skew = wall_left(val.pos + 2, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
@@ -245,7 +251,7 @@ function move.left()
 				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, step_time / 2)
 			end
 		elseif val.facing == hash("right") then
-			position, scale, skew = wall_right(val.pos, val.depth + 1)
+			position, scale, shade, skew = wall_right(val.pos, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
@@ -256,13 +262,13 @@ function move.left()
 			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
 		end
 	end
-	for depth = 0, math.min(visible_range, map_bounds.max_y) do
+	for depth = 0, math.min(render_range, map_bounds.max_y) do
 		if map[0][depth] and map[0][depth].wall then
 			if not map[-1][depth] or not map[-1][depth].wall then
-				local position, scale, skew = wall_right(0, depth+1)
+				local position, scale, shade, skew = wall_right(0, depth+1)
 				if position and depth > 0 then
 					table.insert(walls, {
-						go = factory.create("#wall", vmath.vector3(centre.x, position.y, position.z), nil, {skew_x = skew, texture = map[0][depth].texture}, vmath.vector3(0, scale.y, scale.z)),
+						go = factory.create(map[0][depth].texture, vmath.vector3(centre.x, position.y, position.z), nil, {skew_x = skew, shade = shade}, vmath.vector3(0, scale.y, scale.z)),
 						pos = 0,
 						depth = depth,
 						facing = hash("right")
@@ -278,19 +284,19 @@ end
 
 function move.right()
 	for key, val in ipairs(walls) do
-		local position, scale, skew
+		local position, scale, shade, skew
 		if val.facing == hash("front") then
 			if not (val.depth == 0) or not (math.abs(val.pos) == 1) then
-				position, scale = wall_front(val.pos - 1, val.depth)
+				position, scale, shade = wall_front(val.pos - 1, val.depth)
 			end
 		elseif val.facing == hash("left") then
-			position, scale, skew = wall_left(val.pos, val.depth + 1)
+			position, scale, shade, skew = wall_left(val.pos, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
 			end
 		elseif val.facing == hash("right") then
-			position, scale, skew = wall_right(val.pos - 2, val.depth + 1)
+			position, scale, shade, skew = wall_right(val.pos - 2, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
 				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
@@ -304,13 +310,13 @@ function move.right()
 			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
 		end
 	end
-	for depth = 0, math.min(visible_range, map_bounds.max_y) do
+	for depth = 0, math.min(render_range, map_bounds.max_y) do
 		if map[0][depth] and map[0][depth].wall then
 			if not map[1][depth] or not map[1][depth].wall then
-				local position, scale, skew = wall_left(0, depth+1)
+				local position, scale, shade, skew = wall_left(0, depth+1)
 				if position and depth > 0 then
 					table.insert(walls, {
-						go = factory.create("#wall", vmath.vector3(centre.x, position.y, position.z), nil, {skew_y = skew, texture = map[0][depth].texture}, vmath.vector3(0, scale.y, scale.z)),
+						go = factory.create(map[0][depth].texture, vmath.vector3(centre.x, position.y, position.z), nil, {skew_y = skew, shade = shade}, vmath.vector3(0, scale.y, scale.z)),
 						pos = 0,
 						depth = depth,
 						facing = hash("left")
