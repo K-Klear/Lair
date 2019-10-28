@@ -8,7 +8,6 @@ local scale_multiplier = 3100 / wall_x
 local centre = vmath.vector3(360, 360, 0)
 
 local render_range = 20
-local step_time = 0.4
 
 local map = {}
 local map_bounds = {}
@@ -191,21 +190,22 @@ function move.forward()
 			position, scale, shade, skew = wall_left(val.pos + 1, val.depth)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			end
 		elseif val.facing == hash("right") then
 			position, scale, shade, skew = wall_right(val.pos - 1, val.depth)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			end
 		end
 		if position and val.depth > 0 then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
+			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+			msg.post(val.go, hash("shade_plus"))
 		end
 	end
-	timer.delay(step_time, false, function() player.moving = false; move_tilemap("up") end)
+	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("up") end)
 end
 
 function move.back()
@@ -217,21 +217,22 @@ function move.back()
 			position, scale, shade, skew = wall_left(val.pos + 1, val.depth + 2)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			end
 		elseif val.facing == hash("right") then
 			position, scale, shade, skew = wall_right(val.pos - 1, val.depth + 2)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			end
 		end
 		if position then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
+			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+			msg.post(val.go, hash("shade_minus"))
 		end
 	end
-	timer.delay(step_time, false, function() player.moving = false; move_tilemap("down") end)
+	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("down") end)
 end
 
 function move.left()
@@ -245,21 +246,21 @@ function move.left()
 			position, scale, shade, skew = wall_left(val.pos + 2, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			elseif val.depth > 0 then
-				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, step_time / 2)
-				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, step_time / 2)
+				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, player.step_time / 2)
+				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, player.step_time / 2)
 			end
 		elseif val.facing == hash("right") then
 			position, scale, shade, skew = wall_right(val.pos, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			end
 		end
 		if position then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
+			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 		end
 	end
 	for depth = 0, math.min(render_range, map_bounds.max_y) do
@@ -273,13 +274,13 @@ function move.left()
 						depth = depth,
 						facing = hash("right")
 					})
-					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, step_time / 2, step_time / 2)
-					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, step_time / 2, step_time / 2)
+					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
+					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 				end
 			end
 		end
 	end
-	timer.delay(step_time, false, function() player.moving = false; move_tilemap("left") end)
+	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("left") end)
 end
 
 function move.right()
@@ -293,21 +294,21 @@ function move.right()
 			position, scale, shade, skew = wall_left(val.pos, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(0, skew * scale.y, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			end
 		elseif val.facing == hash("right") then
 			position, scale, shade, skew = wall_right(val.pos - 2, val.depth + 1)
 			if position then
 				local skew_real = vmath.vector4(skew * scale.y, 0, 0, 0)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, step_time)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew_real, go.EASING_LINEAR, player.step_time)
 			elseif val.depth > 0 then
-				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, step_time / 2)
-				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, step_time / 2)
+				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, player.step_time / 2)
+				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, player.step_time / 2)
 			end
 		end
 		if position then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, step_time)
+			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 		end
 	end
 	for depth = 0, math.min(render_range, map_bounds.max_y) do
@@ -321,13 +322,13 @@ function move.right()
 						depth = depth,
 						facing = hash("left")
 					})
-					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, step_time / 2, step_time / 2)
-					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, step_time / 2, step_time / 2)
+					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
+					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 				end
 			end
 		end
 	end
-	timer.delay(step_time, false, function() player.moving = false; move_tilemap("right") end)
+	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("right") end)
 end
 
 
