@@ -1,12 +1,11 @@
-go.property("skew_x", 0)
-go.property("skew_y", 0)
+go.property("skew", vmath.vector4(0, 0, 0, 0))
 go.property("shade", vmath.vector4(1, 1, 1, 1))
 
 local player = require("main/player_info")
 
 function init(self)
 	local scale = go.get_scale()
-	sprite.set_constant("#sprite", "skew", vmath.vector4(self.skew_x * scale.y, self.skew_y * scale.y, 0, 0))
+	sprite.set_constant("#sprite", "skew", self.skew)
 	sprite.set_constant("#sprite", "shade", self.shade)
 end
 
@@ -23,8 +22,6 @@ function on_message(self, message_id, message, sender)
 end
 
 function update(self, dt)
-	--sprite.set_constant("#sprite", "skew", vmath.vector4(self.skew_x * scale.y, self.skew_y * scale.y, 0, 0))
-	local scale = go.get_scale()
-	local position = go.get_position()
-	go.set("#sprite", "centre", vmath.vector4(position.x + (256 * scale.x), position.y, position.z, 0))
+	local pos = go.get_position()
+	go.set("#sprite", "centre", vmath.vector4(pos.x + (256 * go.get_scale().x), pos.y, pos.z, 0))
 end
