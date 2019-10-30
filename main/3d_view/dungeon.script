@@ -53,7 +53,7 @@ local function get_x(pos, depth)
 	return pos_x - (wall_x * scale_multiplier / dist) / 2 
 end
 
-local function wall_front(pos, depth, facing)
+local function wall_front(pos, depth)
 	local dist = depth * 2 + 1
 	local pos_x = get_x(pos, depth)
 	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1) 
@@ -63,6 +63,21 @@ local function wall_front(pos, depth, facing)
 	shade = vmath.vector4(shade, shade, 1, 1)
 	return position, scale, shade
 end
+
+local function ceiling(pos, depth)
+	local dist = depth * 2 + 1
+	local pos_x = get_x(pos, depth)
+	local size = get_x(pos, depth + 1) - pos_x	
+	local scale = vmath.vector3(scale_multiplier / dist, size / wall_x, 1) 
+	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
+	local position = vmath.vector3(centre.x + pos_x, centre.y + 155, 0.9 / (distance + 1))
+	local skew_var = (1 - ((dist - 1) / ((depth) * 2 - 1))) / 1.4
+	local skew = vmath.vector4(0, 0, skew_var, 0) 
+	local shade = 1 - (depth - 1) * player.sight_range
+	shade = vmath.vector4(shade, shade, 1, 1)
+	return position, scale, shade, skew
+end
+
 
 local function wall_left(pos, depth)
 	local dist = depth * 2 - 1
@@ -328,8 +343,8 @@ function init(self)
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	load_tilemap()
 	update_view()
-	factory.create(map[pos][depth].texture, position, nil, {skew = skew, shade = shade}, scale),
-	wall_left(0, 2)
+	local position, scale, shade, skew = ceiling(0, 4)
+	local test_go = factory.create("#wall", position, nil, {shade = shade, skew = skew}, scale)
 end
 
 function on_message(self, message_id, message, sender)
