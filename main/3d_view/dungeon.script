@@ -43,51 +43,43 @@ end
 
 local function get_x(pos, depth)
 	local mod = 0
-	local pos_x = 0
+	local x_offset = 0
 	local dist = depth * 2 + 1
 	if pos < 0 then mod = 1 end
 	for x = 0 + mod, math.abs(pos) - 1 + mod do
-		pos_x = pos_x + wall_x * scale_multiplier / dist
+		x_offset = x_offset + wall_x * scale_multiplier / dist
 	end
-	if pos < 0 then pos_x = -pos_x end
-	return pos_x - (wall_x * scale_multiplier / dist) / 2 
+	if pos < 0 then x_offset = -x_offset end
+	return x_offset - (wall_x * scale_multiplier / dist) / 2 
 end
 
 local function wall_front(pos, depth)
 	local dist = depth * 2 + 1
-	local pos_x = get_x(pos, depth)
-	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1) 
+	local x_offset = pos * scale_multiplier * wall_x / dist
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + pos_x, centre.y, 	0.9 / (distance + 1))
+	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1)
+	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / (distance + 1))
 	local shade = 1 - (depth - 1) * player.sight_range
 	shade = vmath.vector4(shade, shade, 1, 1)
 	return position, scale, shade
 end
 
-local function ceiling(pos, depth)
-	local dist = depth * 2 + 1
-	local pos_x = get_x(pos, depth)
-	local size = get_x(pos, depth + 1) - pos_x	
-	local scale = vmath.vector3(scale_multiplier / dist, size / wall_x, 1) 
-	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + pos_x, centre.y + 155, 0.9 / (distance + 1))
-	local skew_var = (1 - ((dist - 1) / ((depth) * 2 - 1))) / 1.4
-	local skew = vmath.vector4(0, 0, skew_var, 0) 
-	local shade = 1 - (depth - 1) * player.sight_range
-	shade = vmath.vector4(shade, shade, 1, 1)
-	return position, scale, shade, skew
-end
-
-
 local function wall_left(pos, depth)
-	local dist = depth * 2 - 1
-	local pos_x = get_x(pos, depth - 1)
-	local size = get_x(pos, depth) - pos_x
-	if size < 0 then return end
-	local scale = vmath.vector3(size / wall_x, scale_multiplier / dist, 1) 
+	local dist = depth * 2 + 1
+	local dist2 = dist + 2
+	
+	local x_offset = pos * scale_multiplier * wall_x / dist2
+	print(pos)
+
+	local mid = (scale_multiplier * wall_x * dist + scale_multiplier * wall_x * dist2) / (dist * dist2 * 4)
+	local scal = (scale_multiplier * dist2 - scale_multiplier * dist) / (dist * dist2 * 2) 
+
+	print(mid, x_offset, scal)
+	
+	local scale = vmath.vector3(scal, scale_multiplier / dist, 1) 
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
-	local skew = vmath.vector4(0, (1 - (dist / ((depth + 1) * 2 - 1))) / 1.4, 0, 0) * scale.y
+	local position = vmath.vector3(centre.x - mid + x_offset, centre.y, 0.9 / (distance + 1))
+	local skew = vmath.vector4(0, (1 - dist / dist2) / 1.4, 0, 0) * scale.y
 	local shade = 1 - (depth - 1) * player.sight_range
 	shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
 	return position, scale, shade, skew
@@ -95,12 +87,12 @@ end
 
 local function wall_right(pos, depth)
 	local dist = depth * 2 - 1
-	local pos_x = get_x(pos + 1, depth)
-	local size = get_x(pos + 1, depth - 1) - pos_x
+	local x_offset = get_x(pos + 1, depth)
+	local size = get_x(pos + 1, depth - 1) - x_offset
 	if size < 0 then return end
 	local scale = vmath.vector3(size / wall_x, scale_multiplier / dist, 1) 
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + pos_x, centre.y, 0.9 / (distance + 1))
+	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / (distance + 1))
 	local skew = vmath.vector4((1 - (dist / ((depth + 1) * 2 - 1))) / 1.4, 0, 0, 0) * scale.y
 	local shade = 1 - (depth - 1) * player.sight_range
 	shade = vmath.vector4(shade, shade + player.sight_range, 1, 1)
@@ -127,7 +119,7 @@ local function update_view()
 						})
 					end
 				end
-				if not map[pos-1][depth] or not map[pos-1][depth].wall then
+				if pos > 1000 and (not map[pos-1][depth] or not map[pos-1][depth].wall) then
 					local position, scale, shade, skew = wall_right(pos-1, depth+1)
 					if position then
 						table.insert(walls, {
@@ -138,8 +130,8 @@ local function update_view()
 						})
 					end
 				end
-				if not map[pos+1][depth] or not map[pos+1][depth].wall then
-					local position, scale, shade, skew = wall_left(pos + 1, depth + 1)
+				if pos < 0 and (not map[pos+1][depth] or not map[pos+1][depth].wall) then
+					local position, scale, shade, skew = wall_left(pos + 1, depth)
 					if position then
 						table.insert(walls, {
 							go = factory.create(map[pos][depth].texture, position, nil, {skew = skew, shade = shade}, scale),
@@ -343,8 +335,6 @@ function init(self)
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	load_tilemap()
 	update_view()
-	local position, scale, shade, skew = ceiling(0, 4)
-	local test_go = factory.create("#wall", position, nil, {shade = shade, skew = skew}, scale)
 end
 
 function on_message(self, message_id, message, sender)

@@ -23,5 +23,5 @@ end
 
 function update(self, dt)
 	local pos = go.get_position()
-	go.set("#sprite", "centre", vmath.vector4(pos.x + (256 * go.get_scale().x), pos.y, pos.z, 0))
+	go.set("#sprite", "centre", vmath.vector4(pos.x, pos.y, pos.z, 0))
 end
