@@ -1,0 +1,47 @@
+local right_idle = vmath.vector3(60, 21, 0)
+local right_attack = vmath.vector3(113, -21, 0)
+
+local left_idle = vmath.vector3(-107, -20.5, 0)
+local left_stage_1 = vmath.vector3(-81, 20.5, 0)
+local left_stage_2 = vmath.vector3(-71, 26, 0)
+local left_attack = vmath.vector3(-57, 38, 0)
+
+local ready = true
+
+function init(self)
+	
+end
+
+local fist
+fist = {
+	function()
+		sprite.play_flipbook("/fist_left#sprite", "hand_left_2")
+		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_stage_2, go.EASING_LINEAR, 0.1, 0, fist[2])
+	end,
+	function()
+		sprite.play_flipbook("/fist_left#sprite", "hand_left_3")
+		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_attack, go.EASING_LINEAR, 0.1, 0, fist[3])
+	end,
+	function()
+		msg.post("/dungeon", hash("weapon_hit"), {weapon = hash("fist")})
+		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_stage_2, go.EASING_LINEAR, 0.1, 0, fist[4])
+	end,
+	function()
+		sprite.play_flipbook("/fist_left#sprite", "hand_left_2")
+		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_stage_1, go.EASING_LINEAR, 0.1, 0, fist[5])
+	end,
+	function()
+		sprite.play_flipbook("/fist_left#sprite", "hand_left_1")
+		go.animate("/fist_right", "position", go.PLAYBACK_ONCE_FORWARD, right_idle, go.EASING_OUTSINE, 0.25)
+		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_idle, go.EASING_LINEAR, 0.25, 0, function() ready = true end)
+	end
+}
+
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("fire") and ready then
+		ready = false
+		go.animate("/fist_right", "position", go.PLAYBACK_ONCE_FORWARD, right_attack, go.EASING_INSINE, 0.3)
+		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_stage_1, go.EASING_INSINE, 0.3, 0, fist[1])
+	end
+end

@@ -1,4 +1,44 @@
 name: "main"
+instances {
+  id: "fist_left"
+  prototype: "/main/3d_view/weapons/fist_left.go"
+  position {
+    x: -107.0
+    y: -20.5
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "fist_right"
+  prototype: "/main/3d_view/weapons/fist_right.go"
+  position {
+    x: 60.0
+    y: 21.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
 scale_along_z: 0
 embedded_instances {
   id: "dungeon"
@@ -20,7 +60,7 @@ embedded_instances {
   "embedded_components {\n"
   "  id: \"wall\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/wall.go\\\"\\n"
+  "  data: \"prototype: \\\"/main/3d_view/walls/wall.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -38,7 +78,25 @@ embedded_instances {
   "embedded_components {\n"
   "  id: \"wall_red\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/wall_red.go\\\"\\n"
+  "  data: \"prototype: \\\"/main/3d_view/walls/wall_red.go\\\"\\n"
+  "load_dynamically: false\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"dirt\"\n"
+  "  type: \"factory\"\n"
+  "  data: \"prototype: \\\"/main/3d_view/walls/dirt.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -139,5 +197,78 @@ embedded_instances {
     x: 1.0
     y: 1.0
     z: 1.0
+  }
+}
+embedded_instances {
+  id: "hud"
+  children: "weapon"
+  data: "components {\n"
+  "  id: \"hud\"\n"
+  "  component: \"/main/hud/hud.gui\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+embedded_instances {
+  id: "weapon"
+  children: "fist_left"
+  children: "fist_right"
+  data: "components {\n"
+  "  id: \"weapon\"\n"
+  "  component: \"/main/3d_view/weapons/weapon.script\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 360.0
+    y: 0.0
+    z: 1.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 3.0
+    y: 3.0
+    z: 3.0
   }
 }

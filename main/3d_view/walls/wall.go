@@ -1,6 +1,6 @@
 components {
   id: "wall"
-  component: "/main/3d_view/wall.script"
+  component: "/main/3d_view/walls/wall.script"
   position {
     x: 0.0
     y: 0.0

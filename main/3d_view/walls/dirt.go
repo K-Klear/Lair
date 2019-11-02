@@ -1,6 +1,6 @@
 components {
   id: "wall"
-  component: "/main/3d_view/wall.script"
+  component: "/main/3d_view/walls/wall.script"
   position {
     x: 0.0
     y: 0.0
@@ -16,8 +16,8 @@ components {
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "tile_set: \"/main/3d_view/atlases/wall_red.atlas\"\n"
-  "default_animation: \"wall_red\"\n"
+  data: "tile_set: \"/main/3d_view/atlases/dirt.atlas\"\n"
+  "default_animation: \"dirt\"\n"
   "material: \"/graphics/shaders/skew.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""

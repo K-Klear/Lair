@@ -12,8 +12,9 @@ local render_range = 20
 local map = {}
 local map_bounds = {}
 local tiles = {}
-tiles[1] = {wall = true, texture = "#wall"}
-tiles[3] = {wall = true, texture = "#wall_red"}
+tiles[1] = {wall = true, texture = "#wall", health = 20}
+tiles[2] = {wall = true, texture = "#dirt", health = 10}
+tiles[3] = {wall = true, texture = "#wall_red", health = 20}
 
 local function load_tilemap()
 	map = {}
@@ -33,7 +34,7 @@ local function load_tilemap()
 		for _y = map_bounds.min_y, map_bounds.max_y do
 			local tile = tilemap.get_tile("/minimap#minimap", "walls", _x, _y)
 			if tiles[tile] then
-				map[_x - player_x][_y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture}
+				map[_x - player_x][_y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health}
 			end
 		end
 	end
@@ -53,13 +54,14 @@ local function wall(pos, depth, facing)
 	else
 		scale_y = -scale_multiplier * (-2 * math.abs(pos) - 1) / (dist^2 + 2 * dist)
 		scale = vmath.vector3(scale_y, scale_multiplier / dist, 1)
-		shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
 		if facing > 0 then
 			x_offset = -scale_multiplier * wall_x * (-pos * dist - pos - dist * 0.5 - 0.5) / (dist^2 + 2 * dist)
 			skew = vmath.vector4((1 - dist / (dist + 2)) / 1.4, 0, 0, 0) * scale.y
+			shade = vmath.vector4(shade, shade + player.sight_range, 1, 1)
 		else
 			x_offset = scale_multiplier * wall_x * (pos * dist + pos - dist * 0.5 - 0.5) / (dist^2 + 2 * dist)
 			skew = vmath.vector4(0, (1 - dist / (dist + 2)) / 1.4, 0, 0) * scale.y
+			shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
 		end
 	end
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
@@ -249,5 +251,12 @@ function on_message(self, message_id, message, sender)
 		turn_tilemap(true)
 	elseif message_id == hash("turn_right") then
 		turn_tilemap(false)
+	elseif message_id == hash("space") then
+		msg.post("/weapon", hash("fire"))
+	elseif message_id == hash("weapon_hit") then
+		if map[0][2] and map[0][2].wall then
+			map[0][2] = nil
+			update_view()
+		end
 	end
 end
