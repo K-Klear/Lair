@@ -11,36 +11,22 @@ layers {
     v_flip: 0
   }
   cell {
-    x: 6
-    y: 8
-    tile: 2
-    h_flip: 0
-    v_flip: 0
-  }
-  cell {
-    x: 6
-    y: 9
+    x: 7
+    y: 2
     tile: 0
     h_flip: 0
     v_flip: 0
   }
   cell {
-    x: 6
-    y: 10
-    tile: 2
-    h_flip: 0
-    v_flip: 0
-  }
-  cell {
-    x: 6
-    y: 11
+    x: 9
+    y: 2
     tile: 0
     h_flip: 0
     v_flip: 0
   }
   cell {
-    x: 6
-    y: 12
+    x: 8
+    y: 3
     tile: 2
     h_flip: 0
     v_flip: 0
