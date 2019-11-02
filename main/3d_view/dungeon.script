@@ -67,47 +67,6 @@ local function wall(pos, depth, facing)
 	return position, scale, shade, skew
 end
 
-local function wall_front(pos, depth)
-	local dist = depth * 2 + 1
-	local x_offset = pos * scale_multiplier * wall_x / dist
-	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1)
-	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / distance + 1)
-	local shade = 1 - (depth - 1) * player.sight_range
-	shade = vmath.vector4(shade, shade, 1, 1)
-	return position, scale, shade
-end
-
-local function wall_left(pos, depth)
-	local dist = depth * 2 + 1
-
-	local x_offset = scale_multiplier * wall_x * (pos * dist + pos - dist * 0.5 - 0.5) / (dist^2 + 2 * dist)
-	local scale_y = -scale_multiplier * (-2 * math.abs(pos) - 1) / (dist^2 + 2 * dist)
-	
-	local scale = vmath.vector3(scale_y, scale_multiplier / dist, 1) 
-	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / (distance + 1))
-	local skew = vmath.vector4(0, (1 - dist / (dist + 2)) / 1.4, 0, 0) * scale.y
-	local shade = 1 - (depth - 1) * player.sight_range
-	shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
-	return position, scale, shade, skew
-end
-
-local function wall_right(pos, depth)
-	local dist = depth * 2 + 1
-
-	local x_offset = -scale_multiplier * wall_x * (-pos * dist - pos - dist * 0.5 - 0.5) / (dist^2 + 2 * dist)
-	local scale_y = -scale_multiplier * (-2 * math.abs(pos) - 1) / (dist^2 + 2 * dist)
-
-	local scale = vmath.vector3(scale_y, scale_multiplier / dist, 1) 
-	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / (distance + 1))
-	local skew = vmath.vector4((1 - dist / (dist + 2)) / 1.4, 0, 0, 0) * scale.y
-	local shade = 1 - (depth - 1) * player.sight_range
-	shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
-	return position, scale, shade, skew
-end
-
 local function update_view()
 	for key, val in ipairs(walls) do
 		msg.post(val.go, "delete")
@@ -124,7 +83,7 @@ local function update_view()
 							go = factory.create(map[pos][depth].texture, position, nil, {shade = shade}, scale),
 							pos = pos,
 							depth = depth,
-							facing = hash("front")
+							facing = 0
 						})
 					end
 				end
@@ -135,7 +94,7 @@ local function update_view()
 							go = factory.create(map[pos][depth].texture, position, nil, {skew = skew, shade = shade}, scale),
 							pos = pos,
 							depth = depth,
-							facing = hash("right")
+							facing = 1
 						})
 					end
 				end
@@ -146,7 +105,7 @@ local function update_view()
 							go = factory.create(map[pos][depth].texture, position, nil, {skew = skew, shade = shade}, scale),
 							pos = pos,
 							depth = depth,
-							facing = hash("left")
+							facing = -1
 						})
 					end
 				end
@@ -165,27 +124,15 @@ local function move_tilemap(dir)
 			map[x + direction[dir].x][y + direction[dir].y] = map_old[x][y]
 		end
 	end
+	for key, val in ipairs(walls) do
+		val.pos = val.pos + direction[dir].x
+		val.depth = val.depth + direction[dir].y
+	end
 	map_bounds.min_y = map_bounds.min_y + direction[dir].y; map_bounds.max_y = map_bounds.max_y + direction[dir].y
 	map_bounds.min_x = map_bounds.min_x + direction[dir].x; map_bounds.max_x = map_bounds.max_x + direction[dir].x
 end
 
-local function turn_right()
-	for key, val in ipairs(walls) do
-		local position, scale, shade, skew
-		if val.facing == hash("front") then
-			position, scale, shade, skew = wall(map[val.pos][val.depth], 1, -1)
-		elseif val.facing == hash("right") then
-			position, scale, shade, skew = wall(0, 2, 0)
-		end
-		if position then
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
-		end
-	end
-end
-
-local function turn_tilemap(left, update)
+local function turn_tilemap(left)
 	local shift_x, shift_y
 	if left then
 		shift_x, shift_y = 1, map_bounds.max_x + map_bounds.min_x - 1
@@ -207,87 +154,50 @@ local function turn_tilemap(left, update)
 	local min_x, max_x, min_y, max_y = map_bounds.min_x, map_bounds.max_x, map_bounds.min_y, map_bounds.max_y
 	map_bounds.min_y = min_x - shift_y; map_bounds.max_y = max_x - shift_y
 	map_bounds.min_x = min_y - shift_x; map_bounds.max_x = max_y - shift_x
-	if update then update_view() end
+	update_view()
 end
 
-local move = {}
-
-function move.forward()
+local function move(forward)
 	for key, val in ipairs(walls) do
-		local position, scale, shade, skew
-		if val.facing == hash("front") then
-			position, scale, shade = wall(val.pos, val.depth - 1, 0)
-		elseif val.facing == hash("left") then
-			position, scale, shade, skew = wall(val.pos + 1, val.depth - 1, -1)
+		if val.depth > -1 then
+			local position, scale, shade, skew = wall(val.pos - val.facing, val.depth, val.facing)
 			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-		elseif val.facing == hash("right") then
-			position, scale, shade, skew = wall(val.pos - 1, val.depth - 1, 1)
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-		end
-		if position and val.depth > 0 then
 			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
 			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
-			msg.post(val.go, hash("shade_plus"))
-		end
-	end
-	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("up") end)
-end
-
-function move.back()
-	for key, val in ipairs(walls) do
-		local position, scale, shade, skew
-		if val.facing == hash("front") then
-			position, scale, shade = wall(val.pos, val.depth + 1, 0)
-		elseif val.facing == hash("left") then
-			position, scale, shade, skew = wall(val.pos + 1, val.depth + 1, -1)
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-		elseif val.facing == hash("right") then
-			position, scale, shade, skew = wall(val.pos - 1, val.depth + 1, 1)
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-		end
-		if position then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
-			msg.post(val.go, hash("shade_minus"))
-		end
-	end
-	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("down") end)
-end
-
-function move.left()
-	for key, val in ipairs(walls) do
-		local position, scale, skew
-		if val.facing == hash("front") then
-			if not (val.depth == 0) or not (math.abs(val.pos) == 1) then
-				position, scale, shade = wall(val.pos + 1, val.depth, 0)
+			if forward then
+				msg.post(val.go, hash("shade_plus"))
+			else
+				msg.post(val.go, hash("shade_minus"))
 			end
-		elseif val.facing == hash("left") then
-			if val.pos < -1 then
-				position, scale, shade, skew = wall(val.pos + 2, val.depth, -1)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-			elseif val.depth > 0 then
+		end
+	end
+	timer.delay(player.step_time, false, function() player.moving = false; update_view() end)
+end
+
+local function move_side(side)
+	for key, val in ipairs(walls) do
+		if val.depth > 0 then
+			if val.pos == 0 and val.facing == side then
 				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, player.step_time / 2)
 				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, player.step_time / 2)
+			else
+				local position, scale, shade, skew = wall(val.pos - val.facing, val.depth, val.facing)
+				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
+				go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+				go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 			end
-		elseif val.facing == hash("right") then
-			position, scale, shade, skew = wall(val.pos, val.depth, 1)
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-		end
-		if position then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 		end
 	end
 	for depth = 0, math.min(render_range, map_bounds.max_y) do
-		if map[0][depth] and map[0][depth].wall then
-			if not map[-1][depth] or not map[-1][depth].wall then
-				local position, scale, shade, skew = wall(0, depth, 1)
+		if map[-side][depth] and map[-side][depth].wall then
+			if not map[0][depth] or not map[0][depth].wall then
+				local position, scale, shade, skew = wall(0, depth, -side)
 				if depth > 0 then
 					table.insert(walls, {
-						go = factory.create(map[0][depth].texture, vmath.vector3(centre.x, position.y, position.z), nil, {skew = skew, shade = shade}, vmath.vector3(0, scale.y, scale.z)),
+						go = factory.create(map[-side][depth].texture, vmath.vector3(centre.x, position.y, position.z), nil, {skew = skew, shade = shade}, vmath.vector3(0, scale.y, scale.z)),
 						pos = 0,
 						depth = depth,
-						facing = hash("right")
+						facing = 1
 					})
 					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
@@ -295,53 +205,8 @@ function move.left()
 			end
 		end
 	end
-	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("left") end)
+	timer.delay(player.step_time, false, function() player.moving = false; update_view() end)
 end
-
-function move.right()
-	for key, val in ipairs(walls) do
-		local position, scale, shade, skew
-		if val.facing == hash("front") then
-			if not (val.depth == 0) or not (math.abs(val.pos) == 1) then
-				position, scale, shade = wall(val.pos - 1, val.depth, 0)
-			end
-		elseif val.facing == hash("left") then
-			position, scale, shade, skew = wall(val.pos, val.depth, -1)
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-		elseif val.facing == hash("right") then
-			if val.pos > 1 then 
-				position, scale, shade, skew = wall(val.pos - 2, val.depth, 1)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
-			elseif val.depth > 0 then
-				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, player.step_time / 2)
-				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, player.step_time / 2)
-			end
-		end
-		if position then
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
-		end
-	end
-	for depth = 0, math.min(render_range, map_bounds.max_y) do
-		if map[0][depth] and map[0][depth].wall then
-			if not map[1][depth] or not map[1][depth].wall then
-				local position, scale, shade, skew = wall(0, depth, -1)
-				if depth > 0 then
-					table.insert(walls, {
-						go = factory.create(map[0][depth].texture, vmath.vector3(centre.x, position.y, position.z), nil, {skew = skew, shade = shade}, vmath.vector3(0, scale.y, scale.z)),
-						pos = 0,
-						depth = depth,
-						facing = hash("left")
-					})
-					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
-					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
-				end
-			end
-		end
-	end
-	timer.delay(player.step_time, false, function() player.moving = false; move_tilemap("right") end)
-end
-
 
 function init(self)
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
@@ -354,41 +219,35 @@ function on_message(self, message_id, message, sender)
 		update_view()
 	elseif message_id == hash("forward") then
 		if not map[0][2] or not map[0][2].wall then
-			move.forward()
+			move_tilemap("up")
+			move(true)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("back") then
 		if not map[0][0] or not map[0][0].wall then
-			move.back()
+			move_tilemap("down")
+			move(false)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("left") then
 		if not map[-1][1] or not map[-1][1].wall then
-			move.left()
+			move_tilemap("left")
+			move_side(-1)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("right") then
 		if not map[1][1] or not map[1][1].wall then
-			move.right()
+			move_tilemap("right")
+			move_side(1)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("turn_left") then
-		turn_tilemap(true, true)
+		turn_tilemap(true)
 	elseif message_id == hash("turn_right") then
-		turn_tilemap(false, false)
-		turn_right()
-		--turn_tilemap(false, true)
+		turn_tilemap(false)
 	end
 end
-
-function on_input(self, action_id, action)
-	
-end
-
-
-
-
