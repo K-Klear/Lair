@@ -1,11 +1,13 @@
 local player = require("main/player_info")
+local screen_size = require("main/3d_view/screen_size")
 
 local walls = {}
 
-local wall_x = 512
-local scale_multiplier = 3100 / wall_x
+local wall_x = 512						-- change if I want to change wall texture size for some reason
+local scale_multiplier = 4120 / wall_x	
+local skew_divisor = 2 				--no idea what the number represents, to be honest
 
-local centre = vmath.vector3(360, 360, 0)
+local centre = vmath.vector3(640, 624, 0)
 
 local render_range = 20
 
@@ -16,10 +18,11 @@ tiles[1] = {wall = true, texture = "#wall", health = 20}
 tiles[2] = {wall = true, texture = "#dirt", health = 10}
 tiles[3] = {wall = true, texture = "#wall_red", health = 20}
 
+
 local function load_tilemap()
 	map = {}
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
-	local player_x, player_y
+	local player_x, player_y	-- find starting location
 	local found = false
 	for _x = map_bounds.min_x, map_bounds.max_x do
 		for _y = map_bounds.min_y, map_bounds.max_y do
@@ -34,7 +37,7 @@ local function load_tilemap()
 		for _y = map_bounds.min_y, map_bounds.max_y do
 			local tile = tilemap.get_tile("/minimap#minimap", "walls", _x, _y)
 			if tiles[tile] then
-				map[_x - player_x][_y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health}
+				map[_x - player_x][_y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
 			end
 		end
 	end
@@ -56,17 +59,23 @@ local function wall(pos, depth, facing)
 		scale = vmath.vector3(scale_y, scale_multiplier / dist, 1)
 		if facing > 0 then
 			x_offset = -scale_multiplier * wall_x * (-pos * dist - pos - dist * 0.5 - 0.5) / (dist^2 + 2 * dist)
-			skew = vmath.vector4((1 - dist / (dist + 2)) / 1.4, 0, 0, 0) * scale.y
+			skew = vmath.vector4((1 - dist / (dist + 2)) / skew_divisor, 0, 0, 0) * scale.y
 			shade = vmath.vector4(shade, shade + player.sight_range, 1, 1)
 		else
 			x_offset = scale_multiplier * wall_x * (pos * dist + pos - dist * 0.5 - 0.5) / (dist^2 + 2 * dist)
-			skew = vmath.vector4(0, (1 - dist / (dist + 2)) / 1.4, 0, 0) * scale.y
+			skew = vmath.vector4(0, (1 - dist / (dist + 2)) / skew_divisor, 0, 0) * scale.y
 			shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
 		end
 	end
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / (distance + 1))
 	return position, scale, shade, skew
+end
+
+local function wall_create(pos, depth, facing, position, scale, shade, skew)
+	local props = {shade = shade, skew = skew, health = map[pos][depth].health, health_max = map[pos][depth].health_max}
+	local texture = map[pos][depth].texture
+	table.insert(walls, {go = factory.create(texture, position, nil, props, scale), pos = pos, depth = depth, facing = facing})
 end
 
 local function update_view()
@@ -81,35 +90,16 @@ local function update_view()
 				if not map[pos][depth-1] or not map[pos][depth-1].wall then
 					if not (depth == 0) or not (pos == 0) then
 						local position, scale, shade = wall(pos, depth, 0)
-						table.insert(walls, {
-							go = factory.create(map[pos][depth].texture, position, nil, {shade = shade}, scale),
-							pos = pos,
-							depth = depth,
-							facing = 0
-						})
+						wall_create(pos, depth, 0, position, scale, shade, skew)
 					end
 				end
 				if pos > 0 and (not map[pos-1][depth] or not map[pos-1][depth].wall) then
 					local position, scale, shade, skew = wall(pos-1, depth, 1)
-					if position then
-						table.insert(walls, {
-							go = factory.create(map[pos][depth].texture, position, nil, {skew = skew, shade = shade}, scale),
-							pos = pos,
-							depth = depth,
-							facing = 1
-						})
-					end
+					wall_create(pos, depth, 1, position, scale, shade, skew)
 				end
 				if pos < 0 and (not map[pos+1][depth] or not map[pos+1][depth].wall) then
 					local position, scale, shade, skew = wall(pos+1, depth, -1)
-					if position then
-						table.insert(walls, {
-							go = factory.create(map[pos][depth].texture, position, nil, {skew = skew, shade = shade}, scale),
-							pos = pos,
-							depth = depth,
-							facing = -1
-						})
-					end
+					wall_create(pos, depth, -1, position, scale, shade, skew)
 				end
 			end
 		end
@@ -163,7 +153,7 @@ local function move(forward)
 	for key, val in ipairs(walls) do
 		if val.depth > -1 then
 			local position, scale, shade, skew = wall(val.pos - val.facing, val.depth, val.facing)
-			go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
+			msg.post(val.go, hash("skew"), {skew = skew})
 			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
 			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 			if forward then
@@ -184,7 +174,7 @@ local function move_side(side)
 				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, player.step_time / 2)
 			else
 				local position, scale, shade, skew = wall(val.pos - val.facing, val.depth, val.facing)
-				go.animate(msg.url(nil, val.go, "sprite"), "skew", go.PLAYBACK_ONCE_FORWARD, skew, go.EASING_LINEAR, player.step_time)
+				msg.post(val.go, hash("skew"), {skew = skew})
 				go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
 				go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 			end
@@ -193,14 +183,9 @@ local function move_side(side)
 	for depth = 0, math.min(render_range, map_bounds.max_y) do
 		if map[-side][depth] and map[-side][depth].wall then
 			if not map[0][depth] or not map[0][depth].wall then
-				local position, scale, shade, skew = wall(0, depth, -side)
 				if depth > 0 then
-					table.insert(walls, {
-						go = factory.create(map[-side][depth].texture, vmath.vector3(centre.x, position.y, position.z), nil, {skew = skew, shade = shade}, vmath.vector3(0, scale.y, scale.z)),
-						pos = 0,
-						depth = depth,
-						facing = 1
-					})
+					local position, scale, shade, skew = wall(0, depth, -side)
+					wall_create(-side, depth, 1, vmath.vector3(centre.x, position.y, position.z), vmath.vector3(0, scale.y, scale.z), shade, skew)
 					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 				end
@@ -210,7 +195,19 @@ local function move_side(side)
 	timer.delay(player.step_time, false, function() player.moving = false; update_view() end)
 end
 
+local function window_callback(self, event, data)
+	if event == window.WINDOW_EVENT_FOCUS_LOST then
+	
+	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then
+	
+	elseif event == window.WINDOW_EVENT_RESIZED then
+		screen_size.x, screen_size.y = data.width, data.height
+	end
+end
+
 function init(self)
+	msg.post("@render:", "use_fixed_fit_projection", {near = -1, far = 1})
+	window.set_listener(window_callback)
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	load_tilemap()
 	update_view()
@@ -255,8 +252,13 @@ function on_message(self, message_id, message, sender)
 		msg.post("/weapon", hash("fire"))
 	elseif message_id == hash("weapon_hit") then
 		if map[0][2] and map[0][2].wall then
-			map[0][2] = nil
+			map[0][2].health = map[0][2].health - 5
+			if map[0][2].health < 1 then
+				map[0][2] = nil
+			end
 			update_view()
 		end
+	elseif message_id == hash("screen_size") then
+		screen_size.x = message.width; screen_size.y = message.height
 	end
 end

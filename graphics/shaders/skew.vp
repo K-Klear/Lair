@@ -1,7 +1,4 @@
 uniform highp mat4 view_proj;
-uniform highp mat4 view;
-uniform highp mat4 proj;
-uniform highp mat4 normal;
 uniform highp vec4 centre;
 uniform highp vec4 skew;
 

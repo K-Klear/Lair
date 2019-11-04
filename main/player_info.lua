@@ -3,7 +3,7 @@ local F = {
 	y = 10,
 	facing = ("N"),
 	moving = false,
-	sight_range = 1/5,
+	sight_range = 1/9,
 	step_time = 0.6
 }
 
