@@ -15,5 +15,5 @@ animations {
   flip_horizontal: 0
   flip_vertical: 0
 }
-extrude_borders: 1
-inner_padding: 1
+extrude_borders: 20
+inner_padding: 0

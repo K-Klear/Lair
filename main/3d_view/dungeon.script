@@ -5,7 +5,7 @@ local walls = {}
 
 local wall_x = 512						-- change if I want to change wall texture size for some reason
 local scale_multiplier = 4120 / wall_x	
-local skew_divisor = 2 				--no idea what the number represents, to be honest
+local skew_divisor = 2 	--no idea what the number represents, to be honest, but it changes with aspect ratio now
 
 local centre = vmath.vector3(640, 624, 0)
 
@@ -27,7 +27,7 @@ local function load_tilemap()
 	for _x = map_bounds.min_x, map_bounds.max_x do
 		for _y = map_bounds.min_y, map_bounds.max_y do
 			if tilemap.get_tile("/minimap#minimap", "player", _x, _y) == 5 then
-				player_x = _x; player_y = _y; break
+				player_x = _x; player_y = _y; player.x = _x; player.y = _y break
 			end
 		end
 		if found then break end
@@ -106,6 +106,72 @@ local function update_view()
 	end
 end
 
+local function update_minimap(dir)
+	tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
+	local clockwise = {hash("N"), hash("W"), hash("S"), hash("E")}
+	if dir == hash("turn_left") then
+		for key, val in ipairs(clockwise) do
+			if player.facing == val then
+				player.facing = clockwise[key - 1] or clockwise[4]
+				break
+			end
+		end
+	elseif dir == hash("turn_right") then
+		for key, val in ipairs(clockwise) do
+			if player.facing == val then
+				player.facing = clockwise[key + 1] or clockwise[1]
+				break
+			end
+		end
+	elseif dir == hash("forward") then
+		if player.facing == hash("N") then
+			player.y = player.y + 1
+		elseif player.facing == hash("W") then
+			player.x = player.x + 1
+		elseif player.facing == hash("S") then
+			player.y = player.y - 1
+		elseif player.facing == hash("E") then
+			player.x = player.x - 1
+		end
+	elseif dir == hash("back") then
+		if player.facing == hash("N") then
+			player.y = player.y - 1
+		elseif player.facing == hash("W") then
+			player.x = player.x - 1
+		elseif player.facing == hash("S") then
+			player.y = player.y + 1
+		elseif player.facing == hash("E") then
+			player.x = player.x + 1
+		end
+	elseif dir == hash("left") then
+		if player.facing == hash("N") then
+			player.x = player.x - 1
+		elseif player.facing == hash("W") then
+			player.y = player.y + 1
+		elseif player.facing == hash("S") then
+			player.x = player.x + 1
+		elseif player.facing == hash("E") then
+			player.y = player.y - 1
+		end
+	elseif dir == hash("right") then
+		if player.facing == hash("N") then
+			player.x = player.x + 1
+		elseif player.facing == hash("W") then
+			player.y = player.y - 1
+		elseif player.facing == hash("S") then
+			player.x = player.x - 1
+		elseif player.facing == hash("E") then
+			player.y = player.y + 1
+		end
+	end
+	for key, val in ipairs(clockwise) do
+		if player.facing == val then
+			tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, key + 4)
+			break
+		end
+	end
+end
+
 local function move_tilemap(dir)
 	local direction = {up = {x = 0, y = -1}, down = {x = 0, y = 1},	left = {x = 1, y = 0}, right = {x = -1, y = 0}}
 	local map_old = map
@@ -146,7 +212,9 @@ local function turn_tilemap(left)
 	local min_x, max_x, min_y, max_y = map_bounds.min_x, map_bounds.max_x, map_bounds.min_y, map_bounds.max_y
 	map_bounds.min_y = min_x - shift_y; map_bounds.max_y = max_x - shift_y
 	map_bounds.min_x = min_y - shift_x; map_bounds.max_x = max_y - shift_x
-	update_view()
+	local dir
+	if left then dir = hash("turn_left") else dir = hash("turn_right") end
+	update_minimap(dir); update_view(); player.moving = false
 end
 
 local function move(forward)
@@ -163,7 +231,9 @@ local function move(forward)
 			end
 		end
 	end
-	timer.delay(player.step_time, false, function() player.moving = false; update_view() end)
+	local dir
+	if forward then dir = hash("forward") else dir = hash("back") end
+	timer.delay(player.step_time, false, function() update_view(); update_minimap(dir); player.moving = false end)
 end
 
 local function move_side(side)
@@ -192,16 +262,17 @@ local function move_side(side)
 			end
 		end
 	end
-	timer.delay(player.step_time, false, function() player.moving = false; update_view() end)
+	local dir
+	if side < 0 then dir = hash("left") else dir = hash("right") end
+	timer.delay(player.step_time, false, function() update_view(); update_minimap(dir); player.moving = false end)
 end
 
 local function window_callback(self, event, data)
 	if event == window.WINDOW_EVENT_FOCUS_LOST then
-	
 	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then
-	
 	elseif event == window.WINDOW_EVENT_RESIZED then
 		screen_size.x, screen_size.y = data.width, data.height
+		skew_divisor = math.max(2.56 / (data.width / data.height), 2)
 	end
 end
 
@@ -255,10 +326,19 @@ function on_message(self, message_id, message, sender)
 			map[0][2].health = map[0][2].health - 5
 			if map[0][2].health < 1 then
 				map[0][2] = nil
+				if player.facing == hash("N") then
+					tilemap.set_tile("/minimap#minimap", "walls", player.x, player.y + 1, 0)
+				elseif player.facing == hash("E") then
+					tilemap.set_tile("/minimap#minimap", "walls", player.x - 1, player.y, 0)
+				elseif player.facing == hash("S") then
+					tilemap.set_tile("/minimap#minimap", "walls", player.x, player.y - 1, 0)
+				elseif player.facing == hash("W") then
+					tilemap.set_tile("/minimap#minimap", "walls", player.x + 1, player.y, 0)
+				end
 			end
 			update_view()
 		end
 	elseif message_id == hash("screen_size") then
-		screen_size.x = message.width; screen_size.y = message.height
+		window_callback(self, window.WINDOW_EVENT_RESIZED, {width = message.width, height = message.height})
 	end
 end

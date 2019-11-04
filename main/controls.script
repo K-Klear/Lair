@@ -23,8 +23,10 @@ function on_input(self, action_id, action)
 		player.moving = true
 		msg.post("/dungeon", hash("right"))
 	elseif action_id == hash("turn_left") and not player.moving and action.pressed then
+		player.moving = true
 		msg.post("/dungeon", hash("turn_left"))
 	elseif action_id == hash("turn_right") and not player.moving and action.pressed then
+		player.moving = true
 		msg.post("/dungeon", hash("turn_right"))
 	elseif action_id == hash("space") then
 		msg.post("/dungeon", hash("space"))
