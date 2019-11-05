@@ -5,11 +5,11 @@ local walls = {}
 
 local wall_x = 512						-- change if I want to change wall texture size for some reason
 local scale_multiplier = 4120 / wall_x	
-local skew_divisor = 2 	--no idea what the number represents, to be honest, but it changes with aspect ratio now
+local skew_divisor = 2.048 	--no idea what the number represents, to be honest, but it changes with aspect ratio now
 
 local centre = vmath.vector3(640, 624, 0)
 
-local render_range = 20
+
 
 local map = {}
 local map_bounds = {}
@@ -68,7 +68,10 @@ local function wall(pos, depth, facing)
 		end
 	end
 	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local position = vmath.vector3(centre.x + x_offset, centre.y, 0.9 / (distance + 1))
+	local z_pos = 0.9 / (distance + 1)
+	local z_pos_new = 1 - (depth) / 10
+	print(depth, z_pos_new)
+	local position = vmath.vector3(centre.x + x_offset, centre.y, z_pos_new)
 	return position, scale, shade, skew
 end
 
@@ -83,7 +86,7 @@ local function update_view()
 		msg.post(val.go, "delete")
 	end
 	walls = {}
-	for depth = 0, math.min(render_range, map_bounds.max_y) do
+	for depth = 0, math.min(player.render_range, map_bounds.max_y) do
 		local pos_range = math.ceil((depth + 1) * 0.6) + 1
 		for pos = math.max(-pos_range, map_bounds.min_x), math.min(pos_range, map_bounds.max_x) do
 			if map[pos][depth] and map[pos][depth].wall then
@@ -250,7 +253,7 @@ local function move_side(side)
 			end
 		end
 	end
-	for depth = 0, math.min(render_range, map_bounds.max_y) do
+	for depth = 0, math.min(player.render_range, map_bounds.max_y) do
 		if map[-side][depth] and map[-side][depth].wall then
 			if not map[0][depth] or not map[0][depth].wall then
 				if depth > 0 then
@@ -272,7 +275,7 @@ local function window_callback(self, event, data)
 	elseif event == window.WINDOW_EVENT_FOCUS_GAINED then
 	elseif event == window.WINDOW_EVENT_RESIZED then
 		screen_size.x, screen_size.y = data.width, data.height
-		skew_divisor = math.max(2.56 / (data.width / data.height), 2)
+		skew_divisor = math.max(2.56 / (data.width / data.height), 2.048)
 	end
 end
 
@@ -282,6 +285,10 @@ function init(self)
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	load_tilemap()
 	update_view()
+end
+
+local function spawn_zombie()
+	factory.create("#zombie", vmath.vector3(centre.x, centre.y, 0), nil, nil, vmath.vector3(5, 5, 5))
 end
 
 function on_message(self, message_id, message, sender)
@@ -320,6 +327,7 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("turn_right") then
 		turn_tilemap(false)
 	elseif message_id == hash("space") then
+		spawn_zombie()
 		msg.post("/weapon", hash("fire"))
 	elseif message_id == hash("weapon_hit") then
 		if map[0][2] and map[0][2].wall then
