@@ -67,13 +67,25 @@ local function wall(pos, depth, facing)
 			shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
 		end
 	end
-	local distance = math.sqrt(math.abs(pos)^2 + depth^2)
-	local z_pos = 0.9 / (distance + 1)
-	local z_pos_new = 1 - (depth) / 10
-	print(depth, z_pos_new)
-	local position = vmath.vector3(centre.x + x_offset, centre.y, z_pos_new)
+	--local distance = math.sqrt(math.abs(pos)^2 + depth^2)
+	local z_pos = 1 - (depth) / 10
+	local position = vmath.vector3(centre.x + x_offset, centre.y, z_pos)
 	return position, scale, shade, skew
 end
+
+local function spawn_zombie(pos, depth, x, y)
+	local dist = depth * 2 + 1
+	local shade = 1 - (depth - 1) * player.sight_range + (-y - 1) * player.sight_range / 2
+	local scale = vmath.vector3(scale_multiplier / dist, scale_multiplier / dist, 1) * 5
+	local z_pos = 0.95 - (depth) / 10 --+ (y * 0.1)
+	local zom = factory.create("#zombie", vmath.vector3(centre.x, centre.y - 500, z_pos), nil, nil, scale)
+	sprite.set_constant(msg.url(nil, zom, "sprite"), "tint", vmath.vector4(shade, shade, shade, 1))
+end
+
+local function spawn()
+	spawn_zombie(0, 1, 0, 0)
+end
+
 
 local function wall_create(pos, depth, facing, position, scale, shade, skew)
 	local props = {shade = shade, skew = skew, health = map[pos][depth].health, health_max = map[pos][depth].health_max}
@@ -285,10 +297,7 @@ function init(self)
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	load_tilemap()
 	update_view()
-end
-
-local function spawn_zombie()
-	factory.create("#zombie", vmath.vector3(centre.x, centre.y, 0), nil, nil, vmath.vector3(5, 5, 5))
+	spawn()
 end
 
 function on_message(self, message_id, message, sender)
@@ -327,7 +336,6 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("turn_right") then
 		turn_tilemap(false)
 	elseif message_id == hash("space") then
-		spawn_zombie()
 		msg.post("/weapon", hash("fire"))
 	elseif message_id == hash("weapon_hit") then
 		if map[0][2] and map[0][2].wall then
