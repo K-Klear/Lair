@@ -1,0 +1,18 @@
+go.property("shade", 1)
+go.property("facing", hash("front"))
+
+function init(self)
+	if self.facing == hash("back") then
+		sprite.play_flipbook("#sprite", "zombie_back")
+	elseif self.facing == hash("left") then
+		sprite.play_flipbook("#sprite", "zombie_side")
+	elseif self.facing == hash("right") then
+		sprite.play_flipbook("#sprite", "zombie_side")
+		sprite.set_hflip("#sprite", true)
+	end
+	sprite.set_constant("#sprite", "tint", vmath.vector4(self.shade, self.shade, self.shade, 1))
+end
+
+function on_message(self, message_id, message, sender)
+	
+end

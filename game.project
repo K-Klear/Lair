@@ -31,3 +31,6 @@ default_texture_mag_filter = nearest
 [html5]
 show_fullscreen_button = 1
 
+[physics]
+debug = 1
+
