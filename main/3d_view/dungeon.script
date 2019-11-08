@@ -20,30 +20,30 @@ tiles[3] = {wall = true, texture = "#wall_red", health = 20}
 
 
 
-local map2 = {}
+local karta = {}
 local function coords_to_position(x, y)
 	if player.facing == hash("N") then
-		return x - player.x, y - player.y
+		return x - player.x, y - player.y + 1
+	elseif player.facing == hash("W") then
+		return y - player.y, player.x - x + 1
+	elseif player.facing == hash("S") then
+		return player.x - x, player.y - y + 1
+	elseif player.facing == hash("E") then
+		return player.y - y, x - player.x + 1
 	end
-	return pos, depth
+	return x, y
 end
 
 local function position_to_coords(pos, depth)
 	if player.facing == hash("N") then
-		return pos + player.x, depth + player.y - 1
+		return player.x + pos, player.y + depth - 1
 	elseif player.facing == hash("W") then
-		return player.x - depth - 1, player.y + pos
+		return player.x - depth + 1, player.y + pos
+	elseif player.facing == hash("S") then
+		return player.x - pos, player.y - depth + 1
+	elseif player.facing == hash("E") then
+		return player.x + depth - 1, player.y - pos
 	end
-end
-
-local function test_map()
-	--pprint(map2[6][8])
-	local pos, depth = position_to_coords(2, 1)
-	print("map2:")
-	print(pos, depth, player.facing)
-	pprint(map2[pos][depth])
-	print("reality:")
-	pprint(map[2][1])
 end
 
 local function load_tilemap()
@@ -61,14 +61,14 @@ local function load_tilemap()
 	end
 	for x = map_bounds.min_x, map_bounds.max_x do
 		map[x - player_x] = {}
-		map2[x] = {}
+		karta[x] = {}
 		for y = map_bounds.min_y, map_bounds.max_y do
 			local tile = tilemap.get_tile("/minimap#minimap", "walls", x, y)
 			if tiles[tile] then
 				map[x - player_x][y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
-				map2[x][y] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
+				karta[x][y] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
 			else
-				map2[x][y] = {wall = false}
+				karta[x][y] = {wall = false}
 			end
 		end
 	end
@@ -170,7 +170,7 @@ end
 
 local function update_minimap(dir)
 	tilemap.set_tile("/minimap#minimap", "player", player.x, player.y, 0)
-	local clockwise = {hash("N"), hash("W"), hash("S"), hash("E")}
+	local clockwise = {hash("N"), hash("E"), hash("S"), hash("W")}
 	if dir == hash("turn_left") then
 		for key, val in ipairs(clockwise) do
 			if player.facing == val then
@@ -189,41 +189,41 @@ local function update_minimap(dir)
 		if player.facing == hash("N") then
 			player.y = player.y + 1
 		elseif player.facing == hash("W") then
-			player.x = player.x + 1
+			player.x = player.x - 1
 		elseif player.facing == hash("S") then
 			player.y = player.y - 1
 		elseif player.facing == hash("E") then
-			player.x = player.x - 1
+			player.x = player.x + 1
 		end
 	elseif dir == hash("back") then
 		if player.facing == hash("N") then
 			player.y = player.y - 1
 		elseif player.facing == hash("W") then
-			player.x = player.x - 1
+			player.x = player.x + 1
 		elseif player.facing == hash("S") then
 			player.y = player.y + 1
 		elseif player.facing == hash("E") then
-			player.x = player.x + 1
+			player.x = player.x - 1
 		end
 	elseif dir == hash("left") then
 		if player.facing == hash("N") then
 			player.x = player.x - 1
 		elseif player.facing == hash("W") then
-			player.y = player.y + 1
+			player.y = player.y - 1
 		elseif player.facing == hash("S") then
 			player.x = player.x + 1
 		elseif player.facing == hash("E") then
-			player.y = player.y - 1
+			player.y = player.y + 1
 		end
 	elseif dir == hash("right") then
 		if player.facing == hash("N") then
 			player.x = player.x + 1
 		elseif player.facing == hash("W") then
-			player.y = player.y - 1
+			player.y = player.y + 1
 		elseif player.facing == hash("S") then
 			player.x = player.x - 1
 		elseif player.facing == hash("E") then
-			player.y = player.y + 1
+			player.y = player.y - 1
 		end
 	end
 	for key, val in ipairs(clockwise) do
@@ -345,7 +345,6 @@ function init(self)
 	load_tilemap()
 	update_view()
 	spawn()
-	test_map()
 end
 
 function on_message(self, message_id, message, sender)
@@ -385,7 +384,6 @@ function on_message(self, message_id, message, sender)
 		turn_tilemap(false)
 	elseif message_id == hash("space") then
 		msg.post("/weapon", hash("fire"))
-		test_map()
 	elseif message_id == hash("weapon_hit") then
 		if map[0][2] and map[0][2].wall then
 			map[0][2].health = map[0][2].health - 5
@@ -394,11 +392,11 @@ function on_message(self, message_id, message, sender)
 				if player.facing == hash("N") then
 					tilemap.set_tile("/minimap#minimap", "walls", player.x, player.y + 1, 0)
 				elseif player.facing == hash("E") then
-					tilemap.set_tile("/minimap#minimap", "walls", player.x - 1, player.y, 0)
+					tilemap.set_tile("/minimap#minimap", "walls", player.x + 1, player.y, 0)
 				elseif player.facing == hash("S") then
 					tilemap.set_tile("/minimap#minimap", "walls", player.x, player.y - 1, 0)
 				elseif player.facing == hash("W") then
-					tilemap.set_tile("/minimap#minimap", "walls", player.x + 1, player.y, 0)
+					tilemap.set_tile("/minimap#minimap", "walls", player.x - 1, player.y, 0)
 				end
 			end
 			update_view()

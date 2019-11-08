@@ -321,7 +321,7 @@ layers {
   cell {
     x: 5
     y: 3
-    tile: 1
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -335,7 +335,7 @@ layers {
   cell {
     x: 7
     y: 3
-    tile: 1
+    tile: 0
     h_flip: 0
     v_flip: 0
   }
