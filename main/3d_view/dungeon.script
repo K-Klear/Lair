@@ -48,6 +48,7 @@ end
 
 local function load_tilemap()
 	map = {}
+	karta = {}
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	local player_x, player_y	-- find starting location
 	local found = false
@@ -351,28 +352,32 @@ function on_message(self, message_id, message, sender)
 	if message_id == hash("update") then
 		update_view()
 	elseif message_id == hash("forward") then
-		if not map[0][2] or not map[0][2].wall then
+		local x, y = position_to_coords(0, 2)
+		if karta[x] and karta[x][y] and not karta[x][y].wall then
 			move_tilemap("up")
 			move(true)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("back") then
-		if not map[0][0] or not map[0][0].wall then
+		local x, y = position_to_coords(0, 0)
+		if karta[x] and karta[x][y] and not karta[x][y].wall then
 			move_tilemap("down")
 			move(false)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("left") then
-		if not map[-1][1] or not map[-1][1].wall then
+		local x, y = position_to_coords(-1, 1)
+		if karta[x] and karta[x][y] and not karta[x][y].wall then
 			move_tilemap("left")
 			move_side(-1)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("right") then
-		if not map[1][1] or not map[1][1].wall then
+		local x, y = position_to_coords(1, 1)
+		if karta[x] and karta[x][y] and not karta[x][y].wall then
 			move_tilemap("right")
 			move_side(1)
 		else
@@ -385,19 +390,12 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("space") then
 		msg.post("/weapon", hash("fire"))
 	elseif message_id == hash("weapon_hit") then
-		if map[0][2] and map[0][2].wall then
-			map[0][2].health = map[0][2].health - 5
-			if map[0][2].health < 1 then
-				map[0][2] = nil
-				if player.facing == hash("N") then
-					tilemap.set_tile("/minimap#minimap", "walls", player.x, player.y + 1, 0)
-				elseif player.facing == hash("E") then
-					tilemap.set_tile("/minimap#minimap", "walls", player.x + 1, player.y, 0)
-				elseif player.facing == hash("S") then
-					tilemap.set_tile("/minimap#minimap", "walls", player.x, player.y - 1, 0)
-				elseif player.facing == hash("W") then
-					tilemap.set_tile("/minimap#minimap", "walls", player.x - 1, player.y, 0)
-				end
+		local x, y = position_to_coords(0, 2)
+		if karta[x] and karta[x][y].wall then
+			karta[x][y].health = karta[x][y].health - 5
+			if karta[x][y].health < 1 then
+				karta[x][y] = {wall = false}
+				tilemap.set_tile("/minimap#minimap", "walls", x, y, 0)
 			end
 			update_view()
 		end
