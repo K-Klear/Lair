@@ -1,18 +1,24 @@
 local player = require("main/player_info")
 local screen_size = require("main/3d_view/screen_size")
 
+local map = {}
 local walls = {}
 local entities = {}
+local actors = {}
+local objects = {}
+
+-- lest I forget:
+-- map = tilemap data / walls = walls that are currently rendered
+-- entities = rendered items, objects, actors etc
+-- actors = creature data / items = item data etc.
 
 local wall_x = 512						-- texture size
 local scale_multiplier = 4120 / wall_x	-- overall zoom level
-local skew_divisor = 2.048 	--no idea what the number represents, to be honest, but it changes with aspect ratio now
+local skew_divisor = 2.048 	--no idea what the number represents to be honest, but it changes with aspect ratio now
 
 local centre = vmath.vector3(640, 624, 0)
 centre.y = 700
 
-local map = {}
-local map_bounds = {}
 local tiles = {}
 tiles[1] = {wall = true, texture = "#wall", health = 20}
 tiles[2] = {wall = true, texture = "#dirt", health = 10}
@@ -20,7 +26,6 @@ tiles[3] = {wall = true, texture = "#wall_red", health = 20}
 
 
 
-local karta = {}
 local function coords_to_position(x, y)
 	if player.facing == hash("N") then
 		return x - player.x, y - player.y + 1
@@ -48,33 +53,31 @@ end
 
 local function load_tilemap()
 	map = {}
-	karta = {}
+	local map_bounds = {}
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	local player_x, player_y	-- find starting location
 	local found = false
+	local clockwise = {hash("N"), hash("E"), hash("S"), hash("W")}
 	for x = map_bounds.min_x, map_bounds.max_x do
 		for y = map_bounds.min_y, map_bounds.max_y do
-			if tilemap.get_tile("/minimap#minimap", "player", x, y) == 5 then
-				player_x = x; player_y = y; player.x = x; player.y = y break
+			local tile = tilemap.get_tile("/minimap#minimap", "player", x, y)
+			if tile > 4 and tile < 9 then
+				player_x = x; player_y = y; player.x = x; player.y = y; player.facing = clockwise[tile - 4] break
 			end
 		end
 		if found then break end
 	end
 	for x = map_bounds.min_x, map_bounds.max_x do
-		map[x - player_x] = {}
-		karta[x] = {}
+		map[x] = {}
 		for y = map_bounds.min_y, map_bounds.max_y do
 			local tile = tilemap.get_tile("/minimap#minimap", "walls", x, y)
 			if tiles[tile] then
-				map[x - player_x][y - player_y + 1] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
-				karta[x][y] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
+				map[x][y] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
 			else
-				karta[x][y] = {wall = false}
+				map[x][y] = {wall = false}
 			end
 		end
 	end
-	map_bounds.min_y = map_bounds.min_y - player_y + 1; map_bounds.max_y = map_bounds.max_y - player_y + 1
-	map_bounds.min_x = map_bounds.min_x - player_x; map_bounds.max_x = map_bounds.max_x - player_x
 end
 
 local function wall_get_position(pos, depth, facing)
@@ -100,70 +103,114 @@ local function wall_get_position(pos, depth, facing)
 			shade = vmath.vector4(shade + player.sight_range, shade, 1, 1)
 		end
 	end
-	--local distance = math.sqrt(math.abs(pos)^2 + depth^2)
 	local z_pos = 1 - (depth) / 10
 	local position = vmath.vector3(centre.x + x_offset, centre.y, z_pos)
 	return position, scale, shade, skew
 end
 
-local function entity_get_position(pos, depth, x, y)
+local function entity_get_position(pos, depth, local_x, local_y, facing, ceiling)
 	local dist_near = depth * 2 + 1
 	local dist_far = depth * 2 + 3
-	local shade = 1 - (depth - 1) * player.sight_range + (-y - 1) * player.sight_range / 2
+	local shade = 1 - (depth - 1) * player.sight_range + (-local_y - 1) * player.sight_range / 2
 	local scale = vmath.vector3(scale_multiplier / dist_near, scale_multiplier / dist_near, 1) * 5
-	local z_pos = 0.95 - (depth) / 10 --+ (y * 0.1) WIP - Y POS NOT TAKEN INTO ACCOUNT
+	local z_pos = 0.95 - (depth) / 10 --+ (local_y * 0.1) WIP - Y POS NOT TAKEN INTO ACCOUNT
 	local x_offset = pos * scale_multiplier * wall_x / dist_far
-	x_offset = x_offset + x * scale_multiplier * wall_x * 0.5 / (dist_near + 1 + y)
+	x_offset = x_offset + local_x * scale_multiplier * wall_x * 0.5 / (dist_near + 1 + local_y)
 	local y_offset = -scale_multiplier * wall_x * ((dist_far + dist_near) / (4 * dist_near * dist_far))
-	y_offset = y_offset + y * (scale_multiplier * wall_x / dist_near - scale_multiplier * wall_x / dist_far) / 4
+	if ceiling then y_offset = -y_offset end
+	y_offset = y_offset + local_y * (scale_multiplier * wall_x / dist_near - scale_multiplier * wall_x / dist_far) / 4
 	local position = vmath.vector3(centre.x + x_offset, centre.y + y_offset, z_pos)
-	return position, scale, shade
+	if facing then
+		local clockwise = {hash("N"), hash("E"), hash("S"), hash("W")}
+		local results = {hash("back"), hash("left"), hash("front"), hash("right")}
+		local p, a
+		for key, val in ipairs(clockwise) do
+			if player.facing == val then p = key end
+			if facing == val then a = key end
+		end
+		facing = results[(p-a)%4 + 1]
+	end
+	return position, scale, shade, facing
 end
 
-local function entity_draw(pos, depth, facing, position, scale, shade, type)
+local function entity_draw(class, x, y, facing, position, scale, shade, data)
 	local props = {facing = facing, shade = shade}
-	table.insert(entities, {go = factory.create("#"..type, position, nil, props, scale), pos = pos, depth = depth})
+	local spawner = "#"
+	if class == hash("actor") then
+		spawner = spawner..data.type
+	elseif class == hash("object") then
+		spawner = spawner.."objects"
+	end
+	table.insert(entities, {go = factory.create(spawner, position, nil, props, scale), x = x, y = y, local_x = data.local_x, local_y = data.local_y, facing = data.facing, ceiling = data.ceiling})
 end 
 
-local function wall_draw(pos, depth, facing, position, scale, shade, skew)
-	local props = {shade = shade, skew = skew, health = map[pos][depth].health, health_max = map[pos][depth].health_max}
-	local texture = map[pos][depth].texture
-	table.insert(walls, {go = factory.create(texture, position, nil, props, scale), pos = pos, depth = depth, facing = facing})
+local function wall_draw(x, y, facing, position, scale, shade, skew)
+	local props = {shade = shade, skew = skew, health = map[x][y].health, health_max = map[x][y].health_max}
+	local texture = map[x][y].texture
+	table.insert(walls, {go = factory.create(texture, position, nil, props, scale), x = x, y = y, facing = facing})
 end
 
 local function spawn()
-	local pos, depth = 0, 5
-	local position, scale, shade = entity_get_position(pos, depth, 0, 0)
-	entity_draw(pos, depth, hash("right"), position, scale, shade, "zombie")
+	--table.insert(actors, {x = 7, y = 9, type = "zombie", facing = hash("S"), local_x = 0, local_y = 0})
+	table.insert(actors, {x = 11, y = 9, type = "zombie", facing = hash("E"), local_x = 0, local_y = 0})
+	table.insert(objects, {x = 7, y = 9, type = "stalagtite", local_x = 0, local_y = 0, ceiling = true})
 end
 
 local function update_view()
+	-- redraw walls
 	for key, val in ipairs(walls) do
 		go.delete(val.go)
 	end
-	for key, val in ipairs(entities) do
-		--go.delete(val.go)
-	end
 	walls = {}
-	--entities = {}
-	for depth = 0, math.min(player.render_range, map_bounds.max_y) do
+	for depth = 0, player.render_range do
 		local pos_range = math.ceil((depth + 1) * 0.6) + 1
-		for pos = math.max(-pos_range, map_bounds.min_x), math.min(pos_range, map_bounds.max_x) do
-			if map[pos][depth] and map[pos][depth].wall then
-				if not map[pos][depth-1] or not map[pos][depth-1].wall then
-					if not (depth == 0) or not (pos == 0) then
-						local position, scale, shade = wall_get_position(pos, depth, 0)
-						wall_draw(pos, depth, 0, position, scale, shade, skew)
+		for pos = math.max(-pos_range), math.min(pos_range) do
+			local x, y = position_to_coords(pos, depth)
+			if map[x] and map[x][y] then
+				if map[x][y].wall then
+					local _x, _y = position_to_coords(pos, depth - 1)
+					if not map[_x][_y] or not map[_x][_y].wall then
+						if not (depth == 0) or not (pos == 0) then
+							local position, scale, shade = wall_get_position(pos, depth, 0)
+							wall_draw(x, y, 0, position, scale, shade, skew)
+						end
+					end
+					_x, _y = position_to_coords(pos - 1, depth)
+					if pos > 0 and (not map[_x][_y] or not map[_x][_y].wall) then
+						local position, scale, shade, skew = wall_get_position(pos-1, depth, 1)
+						wall_draw(x, y, 1, position, scale, shade, skew)
+					end
+					_x, _y = position_to_coords(pos + 1, depth)
+					if pos < 0 and (not map[_x][_y] or not map[_x][_y].wall) then
+						local position, scale, shade, skew = wall_get_position(pos+1, depth, -1)
+						wall_draw(x, y, -1, position, scale, shade, skew)
 					end
 				end
-				if pos > 0 and (not map[pos-1][depth] or not map[pos-1][depth].wall) then
-					local position, scale, shade, skew = wall_get_position(pos-1, depth, 1)
-					wall_draw(pos, depth, 1, position, scale, shade, skew)
-				end
-				if pos < 0 and (not map[pos+1][depth] or not map[pos+1][depth].wall) then
-					local position, scale, shade, skew = wall_get_position(pos+1, depth, -1)
-					wall_draw(pos, depth, -1, position, scale, shade, skew)
-				end
+			end
+		end
+	end
+	-- redraw entities
+	for key, val in ipairs(entities) do
+		go.delete(val.go)
+	end
+	entities = {}
+	for key, val in ipairs(actors) do
+		local pos, depth = coords_to_position(val.x, val.y)
+		if depth > 0 and depth <= player.render_range then
+			local pos_range = math.ceil((depth + 1) * 0.6) + 1
+			if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
+				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+				entity_draw(hash("actor"), val.x, val.y, facing, position, scale, shade, val)
+			end
+		end
+	end
+	for key, val in ipairs(objects) do
+		local pos, depth = coords_to_position(val.x, val.y)
+		if depth > 0 and depth <= player.render_range then
+			local pos_range = math.ceil((depth + 1) * 0.6) + 1
+			if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
+				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+				entity_draw(hash("object"), val.x, val.y, facing, position, scale, shade, val)
 			end
 		end
 	end
@@ -235,55 +282,11 @@ local function update_minimap(dir)
 	end
 end
 
-local function move_tilemap(dir)
-	local direction = {up = {x = 0, y = -1}, down = {x = 0, y = 1},	left = {x = 1, y = 0}, right = {x = -1, y = 0}}
-	local map_old = map
-	map = {}
-	for x = map_bounds.min_x, map_bounds.max_x do
-		map[x + direction[dir].x] = {}
-		for y = map_bounds.min_y, map_bounds.max_y do
-			map[x + direction[dir].x][y + direction[dir].y] = map_old[x][y]
-		end
-	end
-	for key, val in ipairs(walls) do
-		val.pos = val.pos + direction[dir].x
-		val.depth = val.depth + direction[dir].y
-	end
-	map_bounds.min_y = map_bounds.min_y + direction[dir].y; map_bounds.max_y = map_bounds.max_y + direction[dir].y
-	map_bounds.min_x = map_bounds.min_x + direction[dir].x; map_bounds.max_x = map_bounds.max_x + direction[dir].x
-end
-
-local function turn_tilemap(left)
-	local shift_x, shift_y
-	if left then
-		shift_x, shift_y = 1, map_bounds.max_x + map_bounds.min_x - 1
-	else
-		shift_x, shift_y = map_bounds.max_y + map_bounds.min_y - 1, -1
-	end
-	local map_old = map
-	map = {}
-	for y = map_bounds.min_y, map_bounds.max_y do map[y - shift_x] = {} end
-	for x = map_bounds.min_x, map_bounds.max_x do
-		for y = map_bounds.min_y, map_bounds.max_y do
-			if left then
-				map[y - shift_x][map_bounds.max_x - (x - map_bounds.min_x) - shift_y] = map_old[x][y]
-			else
-				map[map_bounds.max_y - (y - map_bounds.min_y) - shift_x][x - shift_y] = map_old[x][y]
-			end
-		end
-	end
-	local min_x, max_x, min_y, max_y = map_bounds.min_x, map_bounds.max_x, map_bounds.min_y, map_bounds.max_y
-	map_bounds.min_y = min_x - shift_y; map_bounds.max_y = max_x - shift_y
-	map_bounds.min_x = min_y - shift_x; map_bounds.max_x = max_y - shift_x
-	local dir
-	if left then dir = hash("turn_left") else dir = hash("turn_right") end
-	update_minimap(dir); update_view(); player.moving = false
-end
-
 local function move(forward)
 	for key, val in ipairs(walls) do
-		if val.depth > -1 then
-			local position, scale, shade, skew = wall_get_position(val.pos - val.facing, val.depth, val.facing)
+		local pos, depth = coords_to_position(val.x, val.y)
+		if depth > -1 then
+			local position, scale, shade, skew = wall_get_position(pos - val.facing, depth, val.facing)
 			msg.post(val.go, hash("skew"), {skew = skew})
 			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
 			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
@@ -294,40 +297,54 @@ local function move(forward)
 			end
 		end
 	end
-	local dir
-	if forward then dir = hash("forward") else dir = hash("back") end
-	timer.delay(player.step_time, false, function() update_view(); update_minimap(dir); player.moving = false end)
+	for key, val in ipairs(entities) do
+		local pos, depth = coords_to_position(val.x, val.y)
+		if depth > -1 then
+			local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+			go.animate(msg.url(nil, val.go, "sprite"), "tint", go.PLAYBACK_ONCE_FORWARD, vmath.vector4(shade, shade, shade, 1), go.EASING_LINEAR, player.step_time)
+		end
+	end
+	timer.delay(player.step_time, false, function() update_view(); player.moving = false end)
 end
 
 local function move_side(side)
 	for key, val in ipairs(walls) do
-		if val.depth > 0 then
-			if val.pos == 0 and val.facing == side then
+		local pos, depth = coords_to_position(val.x, val.y)
+		if depth > 0 then
+			if pos == 0 and val.facing == side then
 				go.animate(val.go, "scale.x", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_LINEAR, player.step_time / 2)
 				go.animate(val.go, "position.x", go.PLAYBACK_ONCE_FORWARD, centre.x, go.EASING_LINEAR, player.step_time / 2)
 			else
-				local position, scale, shade, skew = wall_get_position(val.pos - val.facing, val.depth, val.facing)
+				local position, scale, shade, skew = wall_get_position(pos - val.facing, depth, val.facing)
 				msg.post(val.go, hash("skew"), {skew = skew})
 				go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
 				go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
 			end
 		end
 	end
-	for depth = 0, math.min(player.render_range, map_bounds.max_y) do
-		if map[-side][depth] and map[-side][depth].wall then
-			if not map[0][depth] or not map[0][depth].wall then
+	for depth = 0, player.render_range do
+		local x, y = position_to_coords(-side, depth)
+		if map[x] and map[x][y] and map[x][y].wall then
+			local _x, _y = position_to_coords(0, depth)
+			if not map[_x] or not map[_x][_y] or not map[_x][_y].wall then
 				if depth > 0 then
 					local position, scale, shade, skew = wall_get_position(0, depth, -side)
-					wall_draw(-side, depth, 1, vmath.vector3(centre.x, position.y, position.z), vmath.vector3(0, scale.y, scale.z), shade, skew)
+					wall_draw(x, y, 1, vmath.vector3(centre.x, position.y, position.z), vmath.vector3(0, scale.y, scale.z), shade, skew)
 					go.animate(walls[#walls].go, "scale.x", go.PLAYBACK_ONCE_FORWARD, scale.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 					go.animate(walls[#walls].go, "position.x", go.PLAYBACK_ONCE_FORWARD, position.x, go.EASING_LINEAR, player.step_time / 2, player.step_time / 2)
 				end
 			end
 		end
 	end
-	local dir
-	if side < 0 then dir = hash("left") else dir = hash("right") end
-	timer.delay(player.step_time, false, function() update_view(); update_minimap(dir); player.moving = false end)
+	for key, val in ipairs(entities) do
+		local pos, depth = coords_to_position(val.x, val.y)
+		local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+		go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+		go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+	end
+	timer.delay(player.step_time, false, function() update_view(); player.moving = false end)
 end
 
 local function window_callback(self, event, data)
@@ -342,10 +359,9 @@ end
 function init(self)
 	msg.post("@render:", "use_fixed_fit_projection", {near = -1, far = 1})
 	window.set_listener(window_callback)
-	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#minimap")
 	load_tilemap()
-	update_view()
 	spawn()
+	update_view()
 end
 
 function on_message(self, message_id, message, sender)
@@ -353,48 +369,52 @@ function on_message(self, message_id, message, sender)
 		update_view()
 	elseif message_id == hash("forward") then
 		local x, y = position_to_coords(0, 2)
-		if karta[x] and karta[x][y] and not karta[x][y].wall then
-			move_tilemap("up")
+		if map[x] and map[x][y] and not map[x][y].wall then
+			update_minimap(hash("forward"))
 			move(true)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("back") then
 		local x, y = position_to_coords(0, 0)
-		if karta[x] and karta[x][y] and not karta[x][y].wall then
-			move_tilemap("down")
+		if map[x] and map[x][y] and not map[x][y].wall then
+			update_minimap(hash("back"))
 			move(false)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("left") then
 		local x, y = position_to_coords(-1, 1)
-		if karta[x] and karta[x][y] and not karta[x][y].wall then
-			move_tilemap("left")
+		if map[x] and map[x][y] and not map[x][y].wall then
+			update_minimap(hash("left"))
 			move_side(-1)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("right") then
 		local x, y = position_to_coords(1, 1)
-		if karta[x] and karta[x][y] and not karta[x][y].wall then
-			move_tilemap("right")
+		if map[x] and map[x][y] and not map[x][y].wall then
+			update_minimap(hash("right"))
 			move_side(1)
 		else
 			player.moving = false
 		end
 	elseif message_id == hash("turn_left") then
-		turn_tilemap(true)
+		update_minimap(hash("turn_left"))
+		update_view()
+		player.moving = false
 	elseif message_id == hash("turn_right") then
-		turn_tilemap(false)
+		update_minimap(hash("turn_right"))
+		update_view()
+		player.moving = false
 	elseif message_id == hash("space") then
 		msg.post("/weapon", hash("fire"))
 	elseif message_id == hash("weapon_hit") then
 		local x, y = position_to_coords(0, 2)
-		if karta[x] and karta[x][y].wall then
-			karta[x][y].health = karta[x][y].health - 5
-			if karta[x][y].health < 1 then
-				karta[x][y] = {wall = false}
+		if map[x] and map[x][y].wall then
+			map[x][y].health = map[x][y].health - 5
+			if map[x][y].health < 1 then
+				map[x][y] = {wall = false}
 				tilemap.set_tile("/minimap#minimap", "walls", x, y, 0)
 			end
 			update_view()

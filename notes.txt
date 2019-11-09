@@ -1,0 +1,4 @@
+- Z position not calculated within cell for entities 
+- local_x/y not implemented correcty. Depends on point of view.
+- moving through entities could look better
+- floor and ceiling textures not implemented at all, but I doubt they will be necessary for a while

@@ -22,7 +22,7 @@ title = Lair
 version = 0.0
 
 [sprite]
-max_count = 256
+max_count = 1024
 
 [graphics]
 default_texture_min_filter = linear
