@@ -1,5 +1,5 @@
 images {
-  image: "/graphics/dungeon/entities/props/stalagtite.png"
+  image: "/graphics/main_view/entities/objects/stalagtite.png"
 }
 margin: 0
 extrude_borders: 2

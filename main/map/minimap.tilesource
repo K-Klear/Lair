@@ -1,4 +1,4 @@
-image: "/graphics/dungeon/minimap.png"
+image: "/graphics/main_view/minimap.png"
 tile_width: 81
 tile_height: 81
 tile_margin: 1

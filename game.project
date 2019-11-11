@@ -33,4 +33,5 @@ show_fullscreen_button = 1
 
 [physics]
 debug = 1
+gravity_y = -100.0
 

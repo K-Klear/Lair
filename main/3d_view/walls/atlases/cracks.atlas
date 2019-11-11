@@ -1,5 +1,5 @@
 images {
-  image: "/graphics/dungeon/walls/wall.png"
+  image: "/graphics/main_view/walls/cracks.png"
 }
 margin: 0
 extrude_borders: 0

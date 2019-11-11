@@ -16,7 +16,7 @@ components {
 embedded_components {
   id: "sprite"
   type: "sprite"
-  data: "tile_set: \"/main/3d_view/atlases/wall.atlas\"\n"
+  data: "tile_set: \"/main/3d_view/walls/atlases/wall.atlas\"\n"
   "default_animation: \"wall\"\n"
   "material: \"/graphics/shaders/skew.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
@@ -36,7 +36,7 @@ embedded_components {
 embedded_components {
   id: "cracks"
   type: "sprite"
-  data: "tile_set: \"/main/3d_view/atlases/cracks.atlas\"\n"
+  data: "tile_set: \"/main/3d_view/walls/atlases/cracks.atlas\"\n"
   "default_animation: \"cracks\"\n"
   "material: \"/graphics/shaders/skew.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
