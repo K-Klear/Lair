@@ -42,6 +42,14 @@ key_trigger {
   input: KEY_E
   action: "slide_right"
 }
+key_trigger {
+  input: KEY_O
+  action: "o"
+}
+key_trigger {
+  input: KEY_P
+  action: "p"
+}
 mouse_trigger {
   input: MOUSE_BUTTON_1
   action: "touch"

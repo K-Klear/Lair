@@ -14,14 +14,12 @@ local scale_multiplier = 4120 / wall_x	-- overall zoom level
 local skew_divisor = 2.048 	--no idea what the number represents to be honest, but it changes with aspect ratio now
 
 local centre = vmath.vector3(640, 624, 0)
-centre.y = 800
+centre.y = 700
 
 local tiles = {}
 tiles[1] = {wall = true, texture = "#wall", health = 20}
 tiles[2] = {wall = true, texture = "#dirt", health = 10}
 tiles[3] = {wall = true, texture = "#wall_red", health = 20}
-
-
 
 local function coords_to_position(x, y)
 	if player.facing == hash("N") then
@@ -109,7 +107,7 @@ local function entity_get_position(pos, depth, local_x, local_y, facing, ceiling
 	local dist_near = depth * 2 + 1
 	local dist_far = depth * 2 + 3
 	local shade = 1 - (depth - 1) * player.sight_range + (-local_y - 1) * player.sight_range / 2
-	local scale = vmath.vector3(scale_multiplier / dist_near, scale_multiplier / dist_near, 1)
+	local scale = vmath.vector3(scale_multiplier / dist_near, scale_multiplier / dist_near, 1) * 5
 	local z_pos = 0.95 - (depth) / 10 --+ (local_y * 0.1) WIP - Y POS NOT TAKEN INTO ACCOUNT
 	local x_offset = pos * scale_multiplier * wall_x / dist_far
 	x_offset = x_offset + local_x * scale_multiplier * wall_x * 0.5 / (dist_near + 1 + local_y)
@@ -132,15 +130,18 @@ end
 
 local function entity_draw(class, x, y, facing, position, scale, shade, data)
 	local props = {facing = facing, shade = shade}
-	local spawner = "#"
+	local factory_url = "#"
 	if class == hash("actor") then
-		spawner = spawner.."actor"
+		factory_url = factory_url.."actor"
 	elseif class == hash("object") then
-		spawner = spawner.."object"
+		factory_url = factory_url.."object"
 	elseif class == hash("item") then
-		spawner = spawner.."item"
+		factory_url = factory_url.."item"
 	end
-	table.insert(entities, {go = factory.create(spawner, position, nil, props, scale), x = x, y = y, local_x = data.local_x, local_y = data.local_y, local_z = data.local_z, facing = data.facing, ceiling = data.ceiling})
+	table.insert(entities, {go = factory.create(factory_url, position, nil, props, scale), x = x, y = y, local_x = data.local_x, local_y = data.local_y, local_z = data.local_z, facing = data.facing, ceiling = data.ceiling})
+	if class == hash("actor") then
+		data.go = entities[#entities].go
+	end
 end 
 
 local function wall_draw(x, y, facing, position, scale, shade, skew)
@@ -150,10 +151,18 @@ local function wall_draw(x, y, facing, position, scale, shade, skew)
 end
 
 local function spawn()
-	--table.insert(actors, {x = 7, y = 9, type = "zombie", facing = hash("S"), local_x = 0, local_y = 0})
-	table.insert(actors, {x = 11, y = 9, type = "zombie", facing = hash("E"), local_x = 0, local_y = 0})
+	table.insert(actors, {x = 7, y = 9, type = "zombie", facing = hash("S"), local_x = 0, local_y = 0})
+	--table.insert(actors, {x = 11, y = 9, type = "zombie", facing = hash("E"), local_x = 0, local_y = 0})
 	--table.insert(objects, {x = 7, y = 9, type = "stalagtite", local_x = 0, local_y = 0, ceiling = true})
+end
 
+local function actor_move(actor, x, y)
+	actor.moving = true
+	local function test()
+		actor.moving = false
+		print(x, y)
+	end
+	timer.delay(2, false, test)
 end
 
 local function update_view()
@@ -195,14 +204,17 @@ local function update_view()
 	end
 	entities = {}
 	for key, val in ipairs(actors) do
+		local drawn = false
 		local pos, depth = coords_to_position(val.x, val.y)
 		if depth > 0 and depth <= player.render_range then
 			local pos_range = math.ceil((depth + 1) * 0.6) + 1
 			if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
 				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
 				entity_draw(hash("actor"), val.x, val.y, facing, position, scale, shade, val)
+				drawn = true
 			end
 		end
+		if not drawn then val.go = nil end
 	end
 	for key, val in ipairs(objects) do
 		local pos, depth = coords_to_position(val.x, val.y)
@@ -434,5 +446,13 @@ function on_message(self, message_id, message, sender)
 		end
 	elseif message_id == hash("screen_size") then
 		window_callback(self, window.WINDOW_EVENT_RESIZED, {width = message.width, height = message.height})
+	elseif message_id == hash("test_1") then
+		if not actors[1].moving then
+			actor_move(actors[1], 6, 9)
+		end
+	elseif message_id == hash("test_2") then
+		if not actors[1].moving then
+			actor_move(actors[1], 7, 9)
+		end
 	end
 end

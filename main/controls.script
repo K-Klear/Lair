@@ -30,5 +30,9 @@ function on_input(self, action_id, action)
 		msg.post("/dungeon", hash("turn_right"))
 	elseif action_id == hash("space") then
 		msg.post("/dungeon", hash("space"))
+	elseif action_id == hash("o") then
+		msg.post("/dungeon", hash("test_1"))
+	elseif action_id == hash("p") then
+		msg.post("/dungeon", hash("test_2"))
 	end
 end
