@@ -41,10 +41,10 @@ instances {
 }
 scale_along_z: 0
 embedded_instances {
-  id: "dungeon"
+  id: "main_view"
   data: "components {\n"
-  "  id: \"dungeon\"\n"
-  "  component: \"/main/3d_view/dungeon.script\"\n"
+  "  id: \"main_view\"\n"
+  "  component: \"/main/3d_view/main_view.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -186,6 +186,21 @@ embedded_instances {
 embedded_instances {
   id: "minimap"
   data: "components {\n"
+  "  id: \"map_0\"\n"
+  "  component: \"/main/map/map_0.tilemap\"\n"
+  "  position {\n"
+  "    x: 1684.0\n"
+  "    y: 330.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  "components {\n"
   "  id: \"minimap\"\n"
   "  component: \"/main/map/minimap.tilemap\"\n"
   "  position {\n"
@@ -200,10 +215,25 @@ embedded_instances {
   "    w: 1.0\n"
   "  }\n"
   "}\n"
+  "components {\n"
+  "  id: \"map\"\n"
+  "  component: \"/main/map/map.script\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
   ""
   position {
-    x: 1064.0
-    y: 39.0
+    x: 1169.0
+    y: 113.0
     z: 1.0
   }
   rotation {
@@ -213,16 +243,16 @@ embedded_instances {
     w: 1.0
   }
   scale3 {
-    x: 0.1
-    y: 0.1
-    z: 0.1
+    x: 0.4
+    y: 0.4
+    z: 0.4
   }
 }
 embedded_instances {
-  id: "controls"
+  id: "main"
   data: "components {\n"
-  "  id: \"controls\"\n"
-  "  component: \"/main/controls.script\"\n"
+  "  id: \"main\"\n"
+  "  component: \"/main/main.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"

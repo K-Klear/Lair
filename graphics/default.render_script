@@ -107,6 +107,6 @@ function on_message(self, message_id, message)
         self.near = message.near or -1
         self.far = message.far or 1
         self.projection_fn = fixed_fit_projection
-        msg.post("main:/dungeon", "screen_size", {width = render.get_window_width(), height = render.get_window_height()})
+        msg.post("main:/main_view", "screen_size", {width = render.get_window_width(), height = render.get_window_height()})
     end
 end

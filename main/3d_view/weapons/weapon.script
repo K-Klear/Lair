@@ -1,3 +1,5 @@
+local screen_size = require("main/3d_view/screen_size")
+
 local right_idle = vmath.vector3(60, 21, 0)
 local right_attack = vmath.vector3(113, -21, 0)
 
@@ -9,7 +11,7 @@ local left_attack = vmath.vector3(-57, 38, 0)
 local ready = true
 
 function init(self)
-	
+
 end
 
 local fist
@@ -23,7 +25,7 @@ fist = {
 		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_attack, go.EASING_LINEAR, 0.1, 0, fist[3])
 	end,
 	function()
-		msg.post("/dungeon", hash("weapon_hit"), {weapon = hash("fist")})
+		msg.post("/main", hash("weapon_hit"), {weapon = hash("fist")})
 		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_stage_2, go.EASING_LINEAR, 0.1, 0, fist[4])
 	end,
 	function()
@@ -44,4 +46,9 @@ function on_message(self, message_id, message, sender)
 		go.animate("/fist_right", "position", go.PLAYBACK_ONCE_FORWARD, right_attack, go.EASING_INSINE, 0.3)
 		go.animate("/fist_left", "position", go.PLAYBACK_ONCE_FORWARD, left_stage_1, go.EASING_INSINE, 0.3, 0, fist[1])
 	end
+end
+
+function update(self, dt)
+	sprite.set_constant("/fist_left#sprite", "screen_size", vmath.vector4(screen_size.x, screen_size.y, 0, 0))
+	sprite.set_constant("/fist_right#sprite", "screen_size", vmath.vector4(screen_size.x, screen_size.y, 0, 0))
 end

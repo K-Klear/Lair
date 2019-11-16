@@ -3,7 +3,7 @@ embedded_components {
   type: "sprite"
   data: "tile_set: \"/main/3d_view/weapons/weapons.atlas\"\n"
   "default_animation: \"hand_right\"\n"
-  "material: \"/builtins/materials/sprite.material\"\n"
+  "material: \"/graphics/shaders/main_view.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""
   position {
