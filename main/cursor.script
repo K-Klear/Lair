@@ -1,0 +1,77 @@
+local screen_size = require("main/3d_view/screen_size")
+local item_hl = {}
+local item_currently_hl
+local button_hl
+local mouse_pressed = false
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("trigger_response") then
+		if message.other_group == hash("item") then
+			if message.enter then
+				table.insert(item_hl, message.other_id)
+			else
+				for key = #item_hl, 1, - 1 do
+					if item_hl[key] == message.other_id then
+						table.remove(item_hl, key)
+					end
+				end
+				if item_currently_hl == message.other_id then
+					msg.post(item_currently_hl, hash("lose_highlight"))
+					item_currently_hl = nil
+				end
+			end
+			if #item_hl > 0 and not item_currently_hl then
+				msg.post(item_hl[#item_hl], hash("highlight"))
+				item_currently_hl = item_hl[#item_hl]
+			end
+		elseif message.other_group == hash("button") then
+			if message.enter then
+				button_hl = message.other_id
+				if mouse_pressed then msg.post(button_hl, "pressed") end
+			else
+				msg.post(message.other_id, "released")
+				if button_hl == message.other_id then button_hl = nil end
+			end
+		end
+	elseif message_id == hash("take_me_off_the_list") then
+		--print(sender, item_currently_hl)
+		for key = #item_hl, 1, - 1 do
+			if msg.url(nil, item_hl[key], "item") == sender then
+				if item_currently_hl == item_hl[key] then
+					item_currently_hl = nil
+				end
+				table.remove(item_hl, key)
+			end
+		end
+	end
+end
+
+function on_input(self, action_id, action)
+	local zoom = math.min(screen_size.x / 1280, screen_size.y / 1024)
+	local projected_width = screen_size.x / zoom
+	local projected_height = screen_size.y / zoom
+	local xoffset = -(projected_width - 1280) / 2
+	local yoffset = -(projected_height - 1024) / 2
+	local x = (action.x / 1280) * projected_width + xoffset
+	local y = (action.y / 1024) * projected_height + yoffset
+	go.set_position(vmath.vector3(x, y, 1), go.get_id("/cursor"))
+	if action_id == hash("click") then
+		if action.pressed then
+			mouse_pressed = true
+			if button_hl then msg.post(button_hl, "pressed") end
+			if item_currently_hl then
+				go.delete(item_currently_hl)
+				--msg.post(item_currently_hl, "delete")
+			end
+		elseif action.released then
+			mouse_pressed = false
+			if button_hl then
+				msg.post(button_hl, "activated")
+			end
+		end
+	end
+end

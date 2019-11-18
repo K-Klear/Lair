@@ -1,0 +1,25 @@
+local player = require("main/player_info")
+
+local compass, clock
+
+function init(self)
+	compass = gui.get_node("compass")
+	clock = gui.get_node("clock")
+end
+
+function get_time(time)
+	local hour, minute = math.floor(time % 1440 / 60), time % 60
+	if minute > 9 then
+		return hour..":"..minute
+	else
+		return hour..":0"..minute
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("update_compass") then
+		gui.set_text(compass, player.facing)
+	elseif message_id == hash("update_clock") then
+		gui.set_text(clock, get_time(player.time))
+	end
+end

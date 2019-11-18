@@ -32,6 +32,6 @@ default_texture_mag_filter = nearest
 show_fullscreen_button = 1
 
 [physics]
-debug = 1
+debug = 0
 gravity_y = -100.0
 

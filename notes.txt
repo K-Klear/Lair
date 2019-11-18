@@ -4,3 +4,4 @@
 - floor and ceiling textures not implemented at all, but I doubt they will be necessary for a while
 - minimap doesn't account for map edges
 - shader solution for limiting graphics to the viewport doesn't quite work when window is wide/short
+

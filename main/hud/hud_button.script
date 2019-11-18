@@ -1,0 +1,33 @@
+go.property("id", 1)
+go.property("enabled", true)
+
+local pressed_colour = vmath.vector4(0.3, 0.3, 0.3, 1)
+local default_colour = vmath.vector4(1, 1, 1, 1)
+local disabled_colour = vmath.vector4(0.1, 0.1, 0.1, 1)
+
+local button_id = {"INVENTORY", "CHARACTER", "MAGIC", "MAP", "MENU"}
+
+function init(self)
+	label.set_text("#label", button_id[self.id])
+	if not self.enabled then
+		go.set("#label", "color", disabled_colour)
+		msg.post("#co", "disable")
+		sprite.play_flipbook("#sprite", "hud_button_down")
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("pressed") then
+		sprite.play_flipbook("#sprite", "hud_button_down")
+		go.set("#label", "color", pressed_colour)
+		sound.play("#pressed")
+	elseif message_id == hash("released") then
+		sprite.play_flipbook("#sprite", "hud_button_up")
+		go.set("#label", "color", default_colour)
+		sound.play("#released")
+	elseif message_id == hash("activated") then
+		sprite.play_flipbook("#sprite", "hud_button_up")
+		go.set("#label", "color", default_colour)
+		sound.play("#released")
+	end
+end

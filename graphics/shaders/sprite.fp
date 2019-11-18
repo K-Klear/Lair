@@ -16,15 +16,14 @@ void main()
     float x = var_texcoord0.x * (shade.y - shade.x) + shade.x;
     float y = var_texcoord0.y * (shade.w - shade.z) + shade.z;
     vec4 shadow = vec4(x * y, x * y, x * y, 1.0);
-    float aspect_ratio = screen_size.y / screen_size.x;
     float view_x = screen_size.y / 0.8;
     float view_y = screen_size.x * 0.8;
     gl_FragColor = texture2D(texture_sampler, var_texcoord0.xy) * shadow * tint_pm;
-    if(gl_FragCoord.x > view_x / 2.0 + screen_size.x / 2.0 - view_x / border_side || gl_FragCoord.x < -view_x / 2.0 + screen_size.x / 2.0 + view_x / border_side)
+    if(gl_FragCoord.x > view_x * 0.5 + screen_size.x * 0.5 - view_x / border_side || gl_FragCoord.x < -view_x * 0.5 + screen_size.x * 0.5 + view_x / border_side)
     {
         discard;
     }
-    if(gl_FragCoord.y > view_y / 2.0 + screen_size.y / 2.0 - view_y / border_up || gl_FragCoord.y < -view_y / 2.0 + screen_size.y / 2.0 + view_y / border_down)
+    if(gl_FragCoord.y > view_y * 0.5 + screen_size.y * 0.5 - view_y / border_up || gl_FragCoord.y < -view_y * 0.5 + screen_size.y * 0.5 + view_y / border_down)
     {
         discard;
     }

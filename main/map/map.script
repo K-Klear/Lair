@@ -22,7 +22,7 @@ local function load_tilemap(tilemap_base)
 		for y = map_bounds.min_y, map_bounds.max_y do
 			local tile = tilemap.get_tile("/minimap#"..map_base, "player", x, y)
 			if tile > 4 and tile < 9 then
-				player_x = x; player_y = y; player.x = x; player.y = y; player.facing = F.clockwise[tile - 4]; break
+				player_x = x; player_y = y; player.x = x; player.y = y; player.facing = F.clockwise_rev[tile - 4]; break
 			end
 		end
 		if found then break end
