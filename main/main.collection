@@ -90,7 +90,7 @@ instances {
     }
     properties {
       id: "enabled"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
   }
@@ -123,7 +123,7 @@ instances {
     }
     properties {
       id: "enabled"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
   }
@@ -156,7 +156,7 @@ instances {
     }
     properties {
       id: "enabled"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
   }
@@ -189,7 +189,7 @@ instances {
     }
     properties {
       id: "enabled"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
   }
@@ -272,9 +272,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"actor\"\n"
+  "  id: \"zombie\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/actors/actor.go\\\"\\n"
+  "  data: \"prototype: \\\"/main/3d_view/actors/zombie.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -290,9 +290,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"object\"\n"
+  "  id: \"stalactite\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/objects/object.go\\\"\\n"
+  "  data: \"prototype: \\\"/main/3d_view/objects/stalactite.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"

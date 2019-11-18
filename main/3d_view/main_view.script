@@ -1,21 +1,17 @@
 local player = require("main/player_info")
 local screen_size = require("main/3d_view/screen_size")
 local map = require("main/map/map")
+local entities = require("main/entities")
 local F = require("main/functions")
 
 local walls = {}		-- wall GOs
-local entities = {}		-- sprite GOs
-local actors = {}		-- creatures
-local items = {}		-- stuff that can be picked up
-local objects = {}		-- furniture, scenery etc.
 
 local wall_x = 512						-- texture size
 local scale_multiplier = 4120 / wall_x	-- overall zoom level
 local skew_divisor = 2.048 	--no idea what the number represents to be honest, but it changes with aspect ratio now
 
 local centre = vmath.vector3(640, 624, 0)
-centre.y = 700
-
+centre.y = 750
 
 
 local function wall_get_position(pos, depth, facing)
@@ -67,20 +63,10 @@ local function entity_get_position(pos, depth, local_x, local_y, facing, ceiling
 	return position, scale, shade, facing
 end
 
-local function entity_draw(class, x, y, facing, position, scale, shade, data)
-	local props = {facing = facing, shade = shade}
-	local factory_url = "#"
-	if class == hash("actor") then
-		factory_url = factory_url.."actor"
-	elseif class == hash("object") then
-		factory_url = factory_url.."object"
-	elseif class == hash("item") then
-		factory_url = factory_url..data.type
-	end
-	table.insert(entities, {go = factory.create(factory_url, position, nil, props, scale), x = x, y = y, local_x = data.local_x, local_y = data.local_y, local_z = data.local_z, facing = data.facing, ceiling = data.ceiling})
-	if class == hash("actor") then
-		data.go = entities[#entities].go
-	end
+local function entity_draw(facing, position, scale, shade, data, key)
+	local props = {facing = facing, shade = shade, key = key}
+	local factory_url = "#"..data.type
+	data.go = factory.create(factory_url, position, nil, props, scale)
 end 
 
 local function wall_draw(x, y, facing, position, scale, shade, skew)
@@ -88,16 +74,6 @@ local function wall_draw(x, y, facing, position, scale, shade, skew)
 	local texture = map[x][y].texture
 	table.insert(walls, {go = factory.create(texture, position, nil, props, scale), x = x, y = y, facing = facing})
 end
-
-local function spawn()
-	local x, y = F.position_to_coords(0, 2)
-	--table.insert(actors, {x = x, y = y, type = "zombie", facing = "S", speed = 0.6, local_x = 0, local_y = 0})
-	--table.insert(objects, {x = 7, y = 9, type = "stalagtite", local_x = 0, local_y = 0, ceiling = true})
-	table.insert(items, {x = x, y = y, type = "stone", local_x = -0.5, local_y = 0})
-	table.insert(items, {x = x, y = y, type = "stone", local_x = 0.0, local_y = 0})
-	table.insert(items, {x = x, y = y, type = "stone", local_x = 0.5, local_y = 0})
-end
-
 
 local function actor_move(actor, x, y)
 	actor.moving = true
@@ -111,6 +87,15 @@ local function actor_move(actor, x, y)
 		local position, scale, shade, facing = entity_get_position(pos, depth, actor.local_x, actor.local_y, actor.facing, actor.ceiling)
 		go.animate(actor.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, actor.speed)
 		go.animate(actor.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, actor.speed)
+	end
+end
+
+local function render_check(pos, depth)
+	if depth > 0 and depth <= player.render_range then
+		local pos_range = math.ceil((depth + 1) * 0.6) + 1
+		if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
+			return true
+		end
 	end
 end
 
@@ -148,40 +133,15 @@ local function update_view()
 		end
 	end
 	-- redraw entities
-	for key, val in ipairs(entities) do
-		go.delete(val.go)
-	end
-	entities = {}
-	for key, val in ipairs(actors) do
-		local drawn = false
-		local pos, depth = F.coords_to_position(val.x, val.y)
-		if depth > 0 and depth <= player.render_range then
-			local pos_range = math.ceil((depth + 1) * 0.6) + 1
-			if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
-				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
-				entity_draw(hash("actor"), val.x, val.y, facing, position, scale, shade, val)
-				drawn = true
-			end
-		end
-		if not drawn then val.go = nil end
-	end
-	for key, val in ipairs(objects) do
-		local pos, depth = F.coords_to_position(val.x, val.y)
-		if depth > 0 and depth <= player.render_range then
-			local pos_range = math.ceil((depth + 1) * 0.6) + 1
-			if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
-				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
-				entity_draw(hash("object"), val.x, val.y, facing, position, scale, shade, val)
-			end
-		end
-	end
-	for key, val in ipairs(items) do
-		local pos, depth = F.coords_to_position(val.x, val.y)
-		if depth > 0 and depth <= player.render_range then
-			local pos_range = math.ceil((depth + 1) * 0.6) + 1
-			if pos >= math.max(-pos_range) and pos <= math.min(pos_range) then
-				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
-				entity_draw(hash("item"), val.x, val.y, facing, position, scale, shade, val)
+	for k, v in pairs(entities) do
+		for key, val in ipairs(v) do
+			if val.x then
+				local pos, depth = F.coords_to_position(val.x, val.y)
+				if render_check(pos, depth) then
+					if val.go then go.delete(val.go) end
+					local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+					entity_draw(facing, position, scale, shade, val, key)
+				end
 			end
 		end
 	end
@@ -202,13 +162,17 @@ local function move(forward)
 			end
 		end
 	end
-	for key, val in ipairs(entities) do
-		local pos, depth = F.coords_to_position(val.x, val.y)
-		if depth > -1 then
-			local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
-			go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
-			go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
-			go.animate(msg.url(nil, val.go, "sprite"), "tint", go.PLAYBACK_ONCE_FORWARD, vmath.vector4(shade, shade, shade, 1), go.EASING_LINEAR, player.step_time)
+	for k, v in pairs(entities) do
+		for key, val in ipairs(v) do
+			if val.go then
+				local pos, depth = F.coords_to_position(val.x, val.y)
+				if depth > -1 then
+					local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+					go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+					go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+					go.animate(msg.url(nil, val.go, "sprite"), "tint", go.PLAYBACK_ONCE_FORWARD, vmath.vector4(shade, shade, shade, 1), go.EASING_LINEAR, player.step_time)
+				end
+			end
 		end
 	end
 	timer.delay(player.step_time, false, function() update_view(); player.moving = false end)
@@ -243,11 +207,15 @@ local function move_side(side)
 			end
 		end
 	end
-	for key, val in ipairs(entities) do
-		local pos, depth = F.coords_to_position(val.x, val.y)
-		local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
-		go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
-		go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+	for k, v in pairs(entities) do
+		for key, val in ipairs(v) do
+			if val.go then
+				local pos, depth = F.coords_to_position(val.x, val.y)
+				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+				go.animate(val.go, "position", go.PLAYBACK_ONCE_FORWARD, position, go.EASING_LINEAR, player.step_time)
+				go.animate(val.go, "scale", go.PLAYBACK_ONCE_FORWARD, scale, go.EASING_LINEAR, player.step_time)
+			end
+		end
 	end
 	timer.delay(player.step_time, false, function() update_view(); player.moving = false end)
 end
@@ -281,6 +249,6 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("screen_size") then
 		window_callback(self, window.WINDOW_EVENT_RESIZED, {width = message.width, height = message.height})
 	elseif message_id == hash("test") then
-		spawn()
+
 	end
 end

@@ -1,6 +1,8 @@
 local screen_size = require("main/3d_view/screen_size")
 local player = require("main/player_info")
 local map = require("main/map/map")
+local entities = require("main/entities")
+local wall_stats = require("main/map/wall_stats")
 local F = require("main/functions")
 
 local clock_timer
@@ -11,10 +13,20 @@ local function time()
 end
 
 function init(self)
+	math.randomseed(os.time()); math.random(); math.random(); math.random()
 	msg.post(".", "acquire_input_focus")
 	msg.post("/hud#hud", hash("update_compass"))
 	msg.post("/hud#hud", hash("update_clock"))
 	clock_timer = timer.delay(1, true, time)
+end
+
+local function test_spawn()
+	local x, y = F.position_to_coords(0, 2)
+	--table.insert(entities.actors, {x = x, y = y, type = "zombie", facing = "S", speed = 0.6, local_x = 0, local_y = 0})
+	--table.insert(entities.objects, {x = 7, y = 9, type = "stalagtite", local_x = 0, local_y = 0, ceiling = true})
+	table.insert(entities.items, {x = x, y = y, type = "stone", local_x = -0.5, local_y = -0.5, local_z = 0})
+	table.insert(entities.items, {x = x, y = y, type = "stone", local_x = 0.0, local_y = 0, local_z = 0})
+	table.insert(entities.items, {x = x, y = y, type = "stone", local_x = 0.5, local_y = 0.5, local_z = 0})
 end
 
 function on_input(self, action_id, action)
@@ -95,10 +107,10 @@ function on_input(self, action_id, action)
 	elseif action_id == hash("space") then
 		msg.post("/weapon", hash("fire"))
 	elseif action_id == hash("o") and action.pressed then
-		msg.post("/main_view", hash("test"))
+		test_spawn()
 		msg.post("/main_view", hash("update"))
 	elseif action_id == hash("p") then
-
+		pprint(map)
 	end
 end
 
@@ -109,6 +121,15 @@ function on_message(self, message_id, message, sender)
 			map[x][y].health = map[x][y].health - 5
 			if map[x][y].health < 1 then
 				msg.post("/minimap", hash("break_wall"), {x = x, y = y})
+				if wall_stats[map[x][y].type].debris then
+					for debris_type, debris_val in pairs(wall_stats[map[x][y].type].debris) do
+						if debris_val.chance > math.random() then
+							for count = 1, math.random(1, debris_val.max) do
+								table.insert(entities.items, {x = x, y = y, type = debris_type, local_x = math.random() - 0.5, local_y = math.random() - 0.5, local_z = 0})
+							end
+						end
+					end
+				end
 			end
 			msg.post("/main_view", hash("update"))
 		end

@@ -13,36 +13,6 @@ components {
     w: 1.0
   }
 }
-components {
-  id: "pressed"
-  component: "/sound/gui/gui_button_down.sound"
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-}
-components {
-  id: "released"
-  component: "/sound/gui/gui_button_up.sound"
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-}
 embedded_components {
   id: "sprite"
   type: "sprite"
@@ -151,6 +121,50 @@ embedded_components {
   "text: \"INVENTORY\"\n"
   "font: \"/graphics/fonts/demonic_tale.font\"\n"
   "material: \"/builtins/fonts/label.material\"\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+}
+embedded_components {
+  id: "pressed"
+  type: "sound"
+  data: "sound: \"/sound/gui/button_down.ogg\"\n"
+  "looping: 0\n"
+  "group: \"master\"\n"
+  "gain: 1.0\n"
+  "pan: 0.0\n"
+  "speed: 1.0\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+}
+embedded_components {
+  id: "released"
+  type: "sound"
+  data: "sound: \"/sound/gui/button_up.ogg\"\n"
+  "looping: 0\n"
+  "group: \"master\"\n"
+  "gain: 1.0\n"
+  "pan: 0.0\n"
+  "speed: 1.0\n"
   ""
   position {
     x: 0.0

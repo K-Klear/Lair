@@ -1,4 +1,5 @@
 local screen_size = require("main/3d_view/screen_size")
+local entities = require("main/entities")
 local item_hl = {}
 local item_currently_hl
 local button_hl
@@ -38,7 +39,6 @@ function on_message(self, message_id, message, sender)
 			end
 		end
 	elseif message_id == hash("take_me_off_the_list") then
-		--print(sender, item_currently_hl)
 		for key = #item_hl, 1, - 1 do
 			if msg.url(nil, item_hl[key], "item") == sender then
 				if item_currently_hl == item_hl[key] then
@@ -64,8 +64,7 @@ function on_input(self, action_id, action)
 			mouse_pressed = true
 			if button_hl then msg.post(button_hl, "pressed") end
 			if item_currently_hl then
-				go.delete(item_currently_hl)
-				--msg.post(item_currently_hl, "delete")
+				msg.post(item_currently_hl, "pick_up")
 			end
 		elseif action.released then
 			mouse_pressed = false

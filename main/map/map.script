@@ -2,6 +2,7 @@ local map = require("main/map/map")
 local player = require("main/player_info")
 local F = require("main/functions")
 local map_base = "map_0"
+local wall_stats = require("main/map/wall_stats")
 
 local function load_tilemap(tilemap_base)
 	for key, val in ipairs(map) do
@@ -9,10 +10,6 @@ local function load_tilemap(tilemap_base)
 	end
 	map_base = tilemap_base
 	local map_bounds = {}
-	local tiles = {}
-	tiles[1] = {wall = true, texture = "#wall", health = 20}
-	tiles[2] = {wall = true, texture = "#dirt", health = 10}
-	tiles[3] = {wall = true, texture = "#wall_red", health = 20}
 	
 	msg.post("/minimap#"..map_base, "disable")
 	map_bounds.min_x, map_bounds.min_y, map_bounds.max_x, map_bounds.max_y = tilemap.get_bounds("/minimap#"..map_base)
@@ -31,8 +28,8 @@ local function load_tilemap(tilemap_base)
 		map[x] = {}
 		for y = map_bounds.min_y, map_bounds.max_y do
 			local tile = tilemap.get_tile("/minimap#"..map_base, "walls", x, y)
-			if tiles[tile] then
-				map[x][y] = {wall = tiles[tile].wall; texture = tiles[tile].texture; health = tiles[tile].health, health_max = tiles[tile].health}
+			if wall_stats[tile] then
+				map[x][y] = {type = tile, wall = wall_stats[tile].wall; texture = wall_stats[tile].texture; health = wall_stats[tile].health, health_max = wall_stats[tile].health}
 			else
 				map[x][y] = {wall = false}
 			end

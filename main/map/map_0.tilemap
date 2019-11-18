@@ -139,28 +139,28 @@ layers {
   cell {
     x: 5
     y: 2
-    tile: 1
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 6
     y: 2
-    tile: 1
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 7
     y: 2
-    tile: 1
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
   cell {
     x: 8
     y: 2
-    tile: 1
+    tile: 2
     h_flip: 0
     v_flip: 0
   }
@@ -301,13 +301,6 @@ layers {
     x: 5
     y: 4
     tile: 0
-    h_flip: 0
-    v_flip: 0
-  }
-  cell {
-    x: 6
-    y: 4
-    tile: 1
     h_flip: 0
     v_flip: 0
   }
