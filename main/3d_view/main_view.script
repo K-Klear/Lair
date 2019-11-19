@@ -63,8 +63,8 @@ local function entity_get_position(pos, depth, local_x, local_y, facing, ceiling
 	return position, scale, shade, facing
 end
 
-local function entity_draw(facing, position, scale, shade, data, key)
-	local props = {facing = facing, shade = shade, key = key}
+local function entity_draw(facing, position, scale, shade, data)
+	local props = {facing = facing, shade = shade, id = data.id}
 	local factory_url = "#"..data.type
 	data.go = factory.create(factory_url, position, nil, props, scale)
 end 
@@ -135,13 +135,13 @@ local function update_view()
 	-- redraw entities
 	for k, v in pairs(entities) do
 		for key, val in ipairs(v) do
-			if val.x then
-				local pos, depth = F.coords_to_position(val.x, val.y)
-				if render_check(pos, depth) then
-					if val.go then go.delete(val.go) end
-					local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
-					entity_draw(facing, position, scale, shade, val, key)
-				end
+			local pos, depth = F.coords_to_position(val.x, val.y)
+			if render_check(pos, depth) then
+				if val.go then go.delete(val.go) end
+				local position, scale, shade, facing = entity_get_position(pos, depth, val.local_x, val.local_y, val.facing, val.ceiling)
+				entity_draw(facing, position, scale, shade, val)
+			else
+				if val.go then go.delete(val.go); val.go = nil end
 			end
 		end
 	end

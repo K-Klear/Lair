@@ -11,7 +11,7 @@ end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("trigger_response") then
-		if message.other_group == hash("item") then
+		if message.other_group == hash("item") or message.other_group == hash("object") then
 			if message.enter then
 				table.insert(item_hl, message.other_id)
 			else

@@ -1,7 +1,7 @@
 go.property("shade", 1)
 go.property("facing", hash("front"))
 go.property("type", hash("zombie"))
-go.property("key", 0)
+go.property("id", 0)
 
 function init(self)
 	if self.facing == hash("back") then

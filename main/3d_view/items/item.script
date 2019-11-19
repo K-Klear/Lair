@@ -1,5 +1,5 @@
 go.property("shade", 1)
-go.property("key", 0)
+go.property("id", 0)
 
 local entities = require("main/entities")
 
@@ -15,10 +15,12 @@ function on_message(self, message_id, message, sender)
 	elseif message_id == hash("lose_highlight") then
 		sprite.set_constant("#sprite", "tint", vmath.vector4(self.shade, self.shade, self.shade, 1))
 	elseif message_id == hash("pick_up") then
-		if entities.items[self.key].go then go.delete(entities.items[self.key].go) end
-		entities.items[self.key].x = nil
-		entities.items[self.key].y = nil
-		entities.items[self.key].go = nil
+		local found_key
+		for key, val in ipairs(entities.items) do
+			if val.id == self.id then found_key = key; break end
+		end
+		if entities.items[found_key].go then go.delete(entities.items[found_key].go) end
+		table.remove(entities.items, found_key)
 		sound.play("#pick_up")
 	end
 end
