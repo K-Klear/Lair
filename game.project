@@ -1,6 +1,6 @@
 [bootstrap]
 main_collection = /main/main.collectionc
-render = /graphics/default.renderc
+render = /rendercam/rendercam.renderc
 
 [script]
 shared_state = 1
@@ -8,30 +8,22 @@ shared_state = 1
 [display]
 width = 1280
 height = 1024
-fullscreen = 0
-dynamic_orientation = 0
-samples = 0
-high_dpi = 0
-vsync = 1
 
 [android]
 input_method = HiddenInputField
 
 [project]
+dependencies = https://github.com/rgrams/rendercam/archive/v1.0.2.zip
 title = Lair
-version = 0.0
-
-[sprite]
-max_count = 1024
-
-[graphics]
-default_texture_min_filter = linear
-default_texture_mag_filter = nearest
-
-[html5]
-show_fullscreen_button = 1
+version = 0.1
 
 [physics]
 debug = 0
-gravity_y = -100.0
+
+[sprite]
+max_count = 512
+
+[graphics]
+default_texture_mag_filter = nearest
+default_texture_min_filter = nearest
 

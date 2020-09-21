@@ -1,22 +1,6 @@
 key_trigger {
-  input: KEY_UP
-  action: "up"
-}
-key_trigger {
-  input: KEY_DOWN
-  action: "down"
-}
-key_trigger {
-  input: KEY_LEFT
-  action: "turn_left"
-}
-key_trigger {
-  input: KEY_RIGHT
-  action: "turn_right"
-}
-key_trigger {
-  input: KEY_SPACE
-  action: "space"
+  input: KEY_F1
+  action: "switch_camera_mode"
 }
 key_trigger {
   input: KEY_W
@@ -28,29 +12,21 @@ key_trigger {
 }
 key_trigger {
   input: KEY_A
-  action: "turn_left"
+  action: "left"
 }
 key_trigger {
   input: KEY_D
-  action: "turn_right"
+  action: "right"
 }
 key_trigger {
-  input: KEY_Q
-  action: "slide_left"
-}
-key_trigger {
-  input: KEY_E
-  action: "slide_right"
-}
-key_trigger {
-  input: KEY_O
-  action: "o"
-}
-key_trigger {
-  input: KEY_P
-  action: "p"
+  input: KEY_SPACE
+  action: "attack"
 }
 mouse_trigger {
   input: MOUSE_BUTTON_1
   action: "click"
+}
+mouse_trigger {
+  input: MOUSE_BUTTON_2
+  action: "r_click"
 }

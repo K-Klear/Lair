@@ -1,14 +1,13 @@
-Credits:
+# Welcome to Defold
 
-Textures:
+This project was created from the "empty" project template.
 
-texturelib.com
+The settings in ["game.project"](defold://open?path=/game.project) are all the default. A bootstrap empty ["main.collection"](defold://open?path=/main/main.collection) is included.
 
-Fonts:
+Check out [the documentation pages](https://defold.com/learn) for examples, tutorials, manuals and API docs.
 
-MB Demonic Tale: https://www.dafont.com/mb-demonic-tale.font
+If you run into trouble, help is available in [our forum](https://forum.defold.com).
 
-Sounds:
+Happy Defolding!
 
-Menu click: https://freesound.org/people/Ranner/sounds/488534/
-Grab: https://freesound.org/people/apocbot/sounds/235335/
+---

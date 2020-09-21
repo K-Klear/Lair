@@ -1,0 +1,22 @@
+go.property("type", hash("zombie"))
+go.property("z", 0)
+go.property("scale", vmath.vector3(1.1, 1.1, 1.1))
+go.property("facing", 0)
+
+local RC = require "rendercam.rendercam"
+
+function init(self)
+	local sprites = {
+		[hash("zombie")] = "zombie_front",
+	}
+	sprite.play_flipbook("#sprite", sprites[self.type])
+	local size = go.get("#sprite", "size")
+	self.floor = (size.y / 2) * self.scale.y / 128
+	self.z = self.z + self.floor
+	if self.z > self.floor then
+		go.animate("#", "z", go.PLAYBACK_ONCE_FORWARD, self.floor, go.EASING_OUTBOUNCE, (self.z - self.floor) * 3)
+	end
+	msg.post("/player#main", hash("actor_created"), {type = self.type, scale = self.scale})
+end
+
+

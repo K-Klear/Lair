@@ -1,0 +1,11 @@
+go.property("type", hash("stalagtite"))
+go.property("z", 1)
+go.property("scale", vmath.vector3(1, 1, 1))
+
+function init(self)
+	local sprites = {
+		[hash("stalagtite")] = "stalagtite"
+	}
+	sprite.play_flipbook("#sprite", sprites[self.type])
+	msg.post("/player#main", hash("object_created"), {type = self.type, z = self.z, scale = self.scale})
+end

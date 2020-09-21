@@ -1,9 +1,0 @@
-images {
-  image: "/graphics/main_view/entities/objects/stalagtite.png"
-}
-images {
-  image: "/graphics/main_view/entities/objects/slab.png"
-}
-margin: 1
-extrude_borders: 1
-inner_padding: 1

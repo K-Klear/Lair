@@ -1,51 +1,11 @@
 name: "main"
 instances {
-  id: "fist_left"
-  prototype: "/main/3d_view/weapons/fist_left.go"
+  id: "camera"
+  prototype: "/rendercam/camera.go"
   position {
-    x: -107.0
-    y: -20.5
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-instances {
-  id: "fist_right"
-  prototype: "/main/3d_view/weapons/fist_right.go"
-  position {
-    x: 60.0
-    y: 21.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-instances {
-  id: "button_inventory"
-  prototype: "/main/hud/hud_button.go"
-  position {
-    x: 962.0
-    y: 206.0
-    z: 0.0
+    x: 480.0
+    y: 320.0
+    z: 500.0
   }
   rotation {
     x: 0.0
@@ -54,25 +14,95 @@ instances {
     w: 1.0
   }
   component_properties {
-    id: "hud_button"
+    id: "script"
     properties {
-      id: "enabled"
+      id: "active"
       value: "true"
       type: PROPERTY_TYPE_BOOLEAN
     }
+    properties {
+      id: "orthographic"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "nearZ"
+      value: "0.01"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewDistance"
+      value: "600.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "fov"
+      value: "65.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "fixedAspectRatio"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
   }
   scale3 {
-    x: 2.0
-    y: 2.0
-    z: 2.0
+    x: 1.0
+    y: 1.0
+    z: 1.0
   }
 }
 instances {
-  id: "button_character"
-  prototype: "/main/hud/hud_button.go"
+  id: "stalagtite_map3"
+  prototype: "/world/objects/object_map.go"
   position {
-    x: 962.0
-    y: 168.0
+    x: 168.0
+    y: 448.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "stalagtite_map4"
+  prototype: "/world/objects/object_map.go"
+  position {
+    x: 171.0
+    y: 205.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "actor_map"
+  prototype: "/world/actors/actor_map.go"
+  position {
+    x: 1474.0
+    y: 799.0
     z: 0.0
   }
   rotation {
@@ -82,129 +112,25 @@ instances {
     w: 1.0
   }
   component_properties {
-    id: "hud_button"
+    id: "actor"
     properties {
-      id: "id"
-      value: "2.0"
+      id: "z"
+      value: "0.0"
       type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "enabled"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
     }
   }
   scale3 {
-    x: 2.0
-    y: 2.0
-    z: 2.0
-  }
-}
-instances {
-  id: "button_map"
-  prototype: "/main/hud/hud_button.go"
-  position {
-    x: 962.0
-    y: 92.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  component_properties {
-    id: "hud_button"
-    properties {
-      id: "id"
-      value: "4.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "enabled"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-  }
-  scale3 {
-    x: 2.0
-    y: 2.0
-    z: 2.0
-  }
-}
-instances {
-  id: "button_magic"
-  prototype: "/main/hud/hud_button.go"
-  position {
-    x: 962.0
-    y: 130.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  component_properties {
-    id: "hud_button"
-    properties {
-      id: "id"
-      value: "3.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "enabled"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-  }
-  scale3 {
-    x: 2.0
-    y: 2.0
-    z: 2.0
-  }
-}
-instances {
-  id: "button_menu"
-  prototype: "/main/hud/hud_button.go"
-  position {
-    x: 962.0
-    y: 54.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  component_properties {
-    id: "hud_button"
-    properties {
-      id: "id"
-      value: "5.0"
-      type: PROPERTY_TYPE_NUMBER
-    }
-    properties {
-      id: "enabled"
-      value: "false"
-      type: PROPERTY_TYPE_BOOLEAN
-    }
-  }
-  scale3 {
-    x: 2.0
-    y: 2.0
-    z: 2.0
+    x: 1.0
+    y: 1.0
+    z: 1.0
   }
 }
 scale_along_z: 0
 embedded_instances {
-  id: "main_view"
+  id: "map"
   data: "components {\n"
-  "  id: \"main_view\"\n"
-  "  component: \"/main/3d_view/main_view.script\"\n"
+  "  id: \"map\"\n"
+  "  component: \"/minimap/map.tilemap\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -218,9 +144,35 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"wall\"\n"
+  "  id: \"collisionobject\"\n"
+  "  type: \"collisionobject\"\n"
+  "  data: \"collision_shape: \\\"/minimap/map.tilemap\\\"\\n"
+  "type: COLLISION_OBJECT_TYPE_STATIC\\n"
+  "mass: 0.0\\n"
+  "friction: 0.1\\n"
+  "restitution: 0.5\\n"
+  "group: \\\"wall\\\"\\n"
+  "mask: \\\"player\\\"\\n"
+  "linear_damping: 0.0\\n"
+  "angular_damping: 0.0\\n"
+  "locked_rotation: false\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  "embedded_components {\n"
+  "  id: \"spawn_wall\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/walls/wall.go\\\"\\n"
+  "  data: \"prototype: \\\"/world/wall.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -236,9 +188,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"wall_red\"\n"
+  "  id: \"spawn_object\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/walls/wall_red.go\\\"\\n"
+  "  data: \"prototype: \\\"/world/objects/object_3d.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -254,9 +206,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"dirt\"\n"
+  "  id: \"spawn_item\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/walls/dirt.go\\\"\\n"
+  "  data: \"prototype: \\\"/world/items/item.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -272,9 +224,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"zombie\"\n"
+  "  id: \"spawn_item_map\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/actors/zombie.go\\\"\\n"
+  "  data: \"prototype: \\\"/world/items/item_map.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -290,63 +242,9 @@ embedded_instances {
   "  }\n"
   "}\n"
   "embedded_components {\n"
-  "  id: \"stalactite\"\n"
+  "  id: \"spawn_actor\"\n"
   "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/objects/stalactite.go\\\"\\n"
-  "load_dynamically: false\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "embedded_components {\n"
-  "  id: \"stone\"\n"
-  "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/items/stone.go\\\"\\n"
-  "load_dynamically: false\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "embedded_components {\n"
-  "  id: \"mushroom\"\n"
-  "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/items/mushroom.go\\\"\\n"
-  "load_dynamically: false\\n"
-  "\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "embedded_components {\n"
-  "  id: \"slab\"\n"
-  "  type: \"factory\"\n"
-  "  data: \"prototype: \\\"/main/3d_view/objects/slab.go\\\"\\n"
+  "  data: \"prototype: \\\"/world/actors/actor.go\\\"\\n"
   "load_dynamically: false\\n"
   "\"\n"
   "  position {\n"
@@ -380,72 +278,7 @@ embedded_instances {
   }
 }
 embedded_instances {
-  id: "minimap"
-  data: "components {\n"
-  "  id: \"map_0\"\n"
-  "  component: \"/main/map/map_0.tilemap\"\n"
-  "  position {\n"
-  "    x: 1684.0\n"
-  "    y: 330.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "components {\n"
-  "  id: \"minimap\"\n"
-  "  component: \"/main/map/minimap.tilemap\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  "components {\n"
-  "  id: \"map\"\n"
-  "  component: \"/main/map/map.script\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
-  position {
-    x: 1169.0
-    y: 113.0
-    z: 1.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 0.4
-    y: 0.4
-    z: 0.4
-  }
-}
-embedded_instances {
-  id: "main"
+  id: "player"
   data: "components {\n"
   "  id: \"main\"\n"
   "  component: \"/main/main.script\"\n"
@@ -461,107 +294,14 @@ embedded_instances {
   "    w: 1.0\n"
   "  }\n"
   "}\n"
-  ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-embedded_instances {
-  id: "hud"
-  children: "button_character"
-  children: "button_inventory"
-  children: "button_magic"
-  children: "button_map"
-  children: "button_menu"
-  children: "weapon"
-  data: "components {\n"
-  "  id: \"hud\"\n"
-  "  component: \"/main/hud/hud.gui\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
-  position {
-    x: 0.0
-    y: 0.0
-    z: 1.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 1.0
-    y: 1.0
-    z: 1.0
-  }
-}
-embedded_instances {
-  id: "weapon"
-  children: "fist_left"
-  children: "fist_right"
-  data: "components {\n"
-  "  id: \"weapon\"\n"
-  "  component: \"/main/3d_view/weapons/weapon.script\"\n"
-  "  position {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "  }\n"
-  "  rotation {\n"
-  "    x: 0.0\n"
-  "    y: 0.0\n"
-  "    z: 0.0\n"
-  "    w: 1.0\n"
-  "  }\n"
-  "}\n"
-  ""
-  position {
-    x: 640.0
-    y: 256.0
-    z: 0.0
-  }
-  rotation {
-    x: 0.0
-    y: 0.0
-    z: 0.0
-    w: 1.0
-  }
-  scale3 {
-    x: 3.0
-    y: 3.0
-    z: 3.0
-  }
-}
-embedded_instances {
-  id: "cursor"
-  data: "components {\n"
-  "  id: \"cursor\"\n"
-  "  component: \"/main/cursor.script\"\n"
+  "embedded_components {\n"
+  "  id: \"sprite\"\n"
+  "  type: \"sprite\"\n"
+  "  data: \"tile_set: \\\"/world/entities.atlas\\\"\\n"
+  "default_animation: \\\"player_temp\\\"\\n"
+  "material: \\\"/builtins/materials/sprite.material\\\"\\n"
+  "blend_mode: BLEND_MODE_ALPHA\\n"
+  "\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -578,17 +318,15 @@ embedded_instances {
   "  id: \"collisionobject\"\n"
   "  type: \"collisionobject\"\n"
   "  data: \"collision_shape: \\\"\\\"\\n"
-  "type: COLLISION_OBJECT_TYPE_TRIGGER\\n"
+  "type: COLLISION_OBJECT_TYPE_KINEMATIC\\n"
   "mass: 0.0\\n"
   "friction: 0.1\\n"
   "restitution: 0.5\\n"
-  "group: \\\"cursor\\\"\\n"
-  "mask: \\\"item\\\"\\n"
-  "mask: \\\"object\\\"\\n"
-  "mask: \\\"button\\\"\\n"
+  "group: \\\"player\\\"\\n"
+  "mask: \\\"wall\\\"\\n"
   "embedded_collision_shape {\\n"
   "  shapes {\\n"
-  "    shape_type: TYPE_BOX\\n"
+  "    shape_type: TYPE_SPHERE\\n"
   "    position {\\n"
   "      x: 0.0\\n"
   "      y: 0.0\\n"
@@ -601,11 +339,9 @@ embedded_instances {
   "      w: 1.0\\n"
   "    }\\n"
   "    index: 0\\n"
-  "    count: 3\\n"
+  "    count: 1\\n"
   "  }\\n"
-  "  data: 0.5\\n"
-  "  data: 0.5\\n"
-  "  data: 0.5\\n"
+  "  data: 60.0\\n"
   "}\\n"
   "linear_damping: 0.0\\n"
   "angular_damping: 0.0\\n"
@@ -625,9 +361,44 @@ embedded_instances {
   "}\n"
   ""
   position {
+    x: 319.0
+    y: 321.0
+    z: 0.0
+  }
+  rotation {
     x: 0.0
     y: 0.0
+    z: 0.70710677
+    w: 0.70710677
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
     z: 1.0
+  }
+}
+embedded_instances {
+  id: "hud"
+  data: "components {\n"
+  "  id: \"hud\"\n"
+  "  component: \"/hud/hud.gui\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
+  ""
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
   }
   rotation {
     x: 0.0

@@ -1,0 +1,20 @@
+go.property("type", hash("stone"))
+go.property("z", 0)
+go.property("scale", vmath.vector3(0.25, 0.25, 0.25))
+
+local RC = require "rendercam.rendercam"
+
+function init(self)
+	local sprites = {
+		[hash("stone")] = "stone",
+		[hash("mushroom")] = "mushroom"
+	}
+	sprite.play_flipbook("#sprite", sprites[self.type])
+	local size = go.get("#sprite", "size")
+	self.floor = (size.y / 2) * self.scale.y / 128
+	self.z = self.z + self.floor
+	if self.z > self.floor then
+		go.animate("#", "z", go.PLAYBACK_ONCE_FORWARD, self.floor, go.EASING_OUTBOUNCE, (self.z - self.floor) * 3)
+	end
+	msg.post("/player#main", hash("item_created"), {type = self.type, z = self.z, scale = self.scale})
+end

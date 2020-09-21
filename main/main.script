@@ -1,149 +1,391 @@
-local screen_size = require("main/3d_view/screen_size")
-local player = require("main/player_info")
-local map = require("main/map/map")
-local entities = require("main/entities")
-local wall_stats = require("main/map/wall_stats")
-local F = require("main/functions")
+local MAP = require("minimap.map")
+local RC = require "rendercam.rendercam"
 
-local clock_timer
+local range = 2000
+local tile_size = 128
+local player_position
 
-local function time()
-	player.time = player.time + 1
-	msg.post("/hud#hud", hash("update_clock"))
-end
+local highlighted 
 
-function init(self)
-	math.randomseed(os.time()); math.random(); math.random(); math.random()
-	msg.post(".", "acquire_input_focus")
-	msg.post("/hud#hud", hash("update_compass"))
-	msg.post("/hud#hud", hash("update_clock"))
-	clock_timer = timer.delay(1, true, time)
-end
+local collisions = vmath.vector3()
 
-local function test_spawn()
-	local x, y = F.position_to_coords(0, 2)
-	--table.insert(entities.actors, {id = entities.actors.id, x = x, y = y, type = "zombie", facing = "S", speed = 0.6, local_x = 0, local_y = 0})
-	--entities.actors.id = entities.actors.id + 1
-	--table.insert(entities.objects, {id = entities.objects.id, x = x, y = y, type = "stalagtite", local_x = 0, local_y = 0, ceiling = true})
-	--entities.objects.id = entities.objects.id + 1
-	table.insert(entities.objects, {
-		id = entities.objects.id, x = x, y = y, type = "slab", local_x = 0, local_y = 0, facing = "S"
-	})
-	entities.objects.id = entities.objects.id + 1
-	--[[
-	table.insert(entities.items, {id = entities.items.id, x = x, y = y, type = "stone", local_x = -0.5, local_y = -0.5, local_z = 0})
-	entities.items.id = entities.items.id + 1
-	table.insert(entities.items, {id = entities.items.id, x = x, y = y, type = "stone", local_x = 0.0, local_y = 0, local_z = 0})
-	entities.items.id = entities.items.id + 1
-	table.insert(entities.items, {id = entities.items.id, x = x, y = y, type = "stone", local_x = 0.5, local_y = 0.5, local_z = 0})
-	entities.items.id = entities.items.id + 1
-	--]]
-end
+local player_speed = 750
+local player_turn_rate = 2
 
-function on_input(self, action_id, action)
-	if action_id == hash("up") and not player.moving then
-		local x, y = F.position_to_coords(0, 2)
-		if map[x] and map[x][y] and not map[x][y].wall then
-			player.moving = true
-			if player.facing == "N" then
-				player.y = player.y + 1
-			elseif player.facing == "W" then
-				player.x = player.x - 1
-			elseif player.facing == "S" then
-				player.y = player.y - 1
-			elseif player.facing == "E" then
-				player.x = player.x + 1
-			end
-			msg.post("/main_view", hash("forward"))
-			timer.delay(player.step_time, false, function() msg.post("/minimap", hash("update")) end)
-		end
-	elseif action_id == hash("down") and not player.moving then
-		local x, y = F.position_to_coords(0, 0)
-		if map[x] and map[x][y] and not map[x][y].wall then
-			player.moving = true
-			if player.facing == "N" then
-				player.y = player.y - 1
-			elseif player.facing == "W" then
-				player.x = player.x + 1
-			elseif player.facing == "S" then
-				player.y = player.y + 1
-			elseif player.facing == "E" then
-				player.x = player.x - 1
-			end
-			msg.post("/main_view", hash("back"))
-			timer.delay(player.step_time, false, function() msg.post("/minimap", hash("update")) end)
-		end
-	elseif action_id == hash("slide_left") and not player.moving then
-		local x, y = F.position_to_coords(-1, 1)
-		if map[x] and map[x][y] and not map[x][y].wall then
-			player.moving = true
-			if player.facing == "N" then
-				player.x = player.x - 1
-			elseif player.facing == "W" then
-				player.y = player.y - 1
-			elseif player.facing == "S" then
-				player.x = player.x + 1
-			elseif player.facing == "E" then
-				player.y = player.y + 1
-			end
-			msg.post("/main_view", hash("left"))
-			timer.delay(player.step_time, false, function() msg.post("/minimap", hash("update")) end)
-		end
-	elseif action_id == hash("slide_right") and not player.moving then
-		local x, y = F.position_to_coords(1, 1)
-		if map[x] and map[x][y] and not map[x][y].wall then
-			player.moving = true
-			if player.facing == "N" then
-				player.x = player.x + 1
-			elseif player.facing == "W" then
-				player.y = player.y + 1
-			elseif player.facing == "S" then
-				player.x = player.x - 1
-			elseif player.facing == "E" then
-				player.y = player.y - 1
-			end
-			msg.post("/main_view", hash("right"))
-			timer.delay(player.step_time, false, function() msg.post("/minimap", hash("update")) end)
-		end
-	elseif action_id == hash("turn_left") and not player.moving and action.pressed then
-		player.facing = F.clockwise_rev[F.clockwise[player.facing] - 1] or F.clockwise_rev[4]
-		msg.post("/main_view", hash("update"))
-		msg.post("/minimap", hash("update"))
-		msg.post("/hud#hud", hash("update_compass"))
-	elseif action_id == hash("turn_right") and not player.moving and action.pressed then
-		player.facing = F.clockwise_rev[F.clockwise[player.facing] + 1] or F.clockwise_rev[1]
-		msg.post("/main_view", hash("update"))
-		msg.post("/minimap", hash("update"))
-		msg.post("/hud#hud", hash("update_compass"))
-	elseif action_id == hash("space") then
-		msg.post("/weapon", hash("fire"))
-	elseif action_id == hash("o") and action.pressed then
-		test_spawn()
-		msg.post("/main_view", hash("update"))
-	elseif action_id == hash("p") and action.pressed then
-		msg.post("/main_view", hash("update"))
+local camera_in_map_mode = true
+
+local function update_camera()
+	if camera_in_map_mode then
+		go.set("/camera", "position", vmath.vector3(player_position.x, player_position.y, 1000))
+	else
+		go.set("/camera", "euler", vmath.vector3(-5, go.get("/player", "euler.z"), 0))
+		local coor = (go.get_world_position("/player") - go.get_world_position("/map")) / tile_size
+		go.set_position(vmath.vector3(-coor.x - 1, -0.1, coor.y + 0.5), "/camera")
 	end
 end
 
-function on_message(self, message_id, message, sender)
-	if message_id == hash("weapon_hit") then
-		local x, y = F.position_to_coords(0, 2)
-		if map[x] and map[x][y].wall then
-			map[x][y].health = map[x][y].health - 5
-			if map[x][y].health < 1 then
-				msg.post("/minimap", hash("break_wall"), {x = x, y = y})
-				if wall_stats[map[x][y].type].debris then
-					for debris_type, debris_val in pairs(wall_stats[map[x][y].type].debris) do
-						if debris_val.chance > math.random() then
-							for count = 1, math.random(1, debris_val.max) do
-								table.insert(entities.items, {id = entities.items.id, x = x, y = y, type = debris_type, local_x = math.random() - 0.5, local_y = math.random() - 0.5, local_z = 0})
-								entities.items.id = entities.items.id + 1
-							end
-						end
-					end
+local function switch_map_mode(enabled)
+	if not enabled then
+		camera_in_map_mode = not camera_in_map_mode
+	else
+		camera_in_map_mode = enabled
+	end
+	if camera_in_map_mode then
+		go.set("/camera", "position", vmath.vector3(480, 320, 1000))
+		go.set("/camera", "euler", vmath.vector3(0, 0, 0))
+		msg.post("/map#map", hash("enable"))
+		update_camera()
+	else
+		msg.post("/map#map", hash("disable"))
+		update_camera()
+	end
+end
+
+local function get_object_coords(pos)
+	pos = (pos - go.get_world_position("/map")) / tile_size
+	return pos.x + 1, pos.y + 1
+end
+
+local function get_wall_coords(pos)
+	pos = (pos - go.get_world_position("/map")) / tile_size
+	local x_diff = (pos.x + 0.5) % 1 - 0.5
+	local y_diff = (pos.y + 0.5) % 1 - 0.5
+	local vertical = math.abs(x_diff) < math.abs(y_diff)
+	if vertical then
+		pos.x = math.floor(pos.x + 0.5)
+		pos.y = math.floor(pos.y)
+		vertical = "w"
+	else
+		pos.x = math.floor(pos.x)
+		pos.y = math.floor(pos.y + 0.5)
+		vertical = "s"
+	end
+	return pos.x + 1, pos.y + 1, vertical
+end
+
+local function find_wall(dir)
+	local ray = physics.raycast(player_position, player_position + dir, {hash("wall")})
+	if not ray then return end
+	local x, y, vertical = get_wall_coords(ray.position)
+
+	MAP.to_render[x] = MAP.to_render[x] or {}
+	MAP.to_render[x][y] = MAP.to_render[x][y] or {}
+
+	MAP.low_x = math.min(MAP.low_x or x, x)
+	MAP.high_x = math.max(MAP.high_x or x, x)
+	MAP.low_y = math.min(MAP.low_y or y, y)
+	MAP.high_y = math.max(MAP.high_y or y, y)
+
+	if not MAP.to_render[x][y][vertical] then
+		MAP.to_render[x][y][vertical] = true
+
+		local endpoint, angle, dir
+		if vertical == "w" then
+			endpoint = vmath.vector3((x - 1) * tile_size, y * tile_size + 1, 0)
+			angle = math.atan2(player_position.x - endpoint.x, endpoint.y - player_position.y)
+			dir = vmath.rotate(vmath.quat_rotation_z(angle), vmath.vector3(0, range, 0))
+			find_wall(dir)
+			
+			endpoint = vmath.vector3((x - 1) * tile_size, (y - 1) * tile_size - 1, 0)
+			angle = math.atan2(player_position.x - endpoint.x, endpoint.y - player_position.y)
+			dir = vmath.rotate(vmath.quat_rotation_z(angle), vmath.vector3(0, range, 0))
+
+			find_wall(dir)
+		else
+			endpoint = vmath.vector3(x * tile_size + 1, (y - 1) * tile_size, 0)
+			angle = math.atan2(player_position.x - endpoint.x, endpoint.y - player_position.y)
+			dir = vmath.rotate(vmath.quat_rotation_z(angle), vmath.vector3(0, range, 0))
+			find_wall(dir)
+
+			endpoint = vmath.vector3((x - 1) * tile_size - 1, (y - 1) * tile_size, 0)
+			angle = math.atan2(player_position.x - endpoint.x, endpoint.y - player_position.y)
+			dir = vmath.rotate(vmath.quat_rotation_z(angle), vmath.vector3(0, range, 0))
+			find_wall(dir)
+		end
+	end
+end
+
+local function create_geometry(x, y, wall_type)
+	local tex = MAP.cells[x][y][wall_type].texture
+	local rotation = vmath.quat(0, 0, 0, 1)
+	local offset = vmath.vector3(-x, 0, y)
+	if wall_type == "c" or wall_type == "f" then
+		rotation = rotation * vmath.quat_rotation_x(math.rad(270))
+		if wall_type == "c" then
+			offset.y = 0.5
+		else
+			offset.y = -0.5
+		end
+		offset.x = offset.x - 0.5
+	else
+		if wall_type == "w" then
+			rotation = rotation * vmath.quat_rotation_y(math.rad(90))
+		else
+			offset = offset - vmath.vector3(0.5, 0, 0.5)
+		end
+	end
+	local new_go = factory.create("/map#spawn_wall", offset, rotation)
+	local sprite_url = msg.url(nil, new_go, "sprite")
+	sprite.play_flipbook(sprite_url, tex)
+	local size = go.get(sprite_url, "size")
+	go.set(sprite_url, "scale", vmath.vector3(1 / size.x, 1 / size.y, 1))
+	return new_go
+end
+
+
+local wall_go = {}
+
+local function spawn_walls()
+	for x, val in pairs(MAP.to_render) do
+		for y, v in pairs(val) do
+			for wall_type, _ in pairs(v) do
+				if not MAP.wall_gos[x] or not MAP.wall_gos[x][y] or not MAP.wall_gos[x][y][wall_type] then
+					MAP.wall_gos[x] = MAP.wall_gos[x] or {}
+					MAP.wall_gos[x][y] = MAP.wall_gos[x][y] or {}
+					MAP.wall_gos[x][y][wall_type] = create_geometry(x, y, wall_type)
 				end
 			end
-			msg.post("/main_view", hash("update"))
+		end
+	end
+end
+
+local function find_walls()
+	player_position = go.get_world_position()
+	MAP.to_render = {}
+	MAP.low_x = nil
+	MAP.high_x = nil
+	MAP.low_y = nil
+	MAP.high_y = nil
+	find_wall(vmath.vector3(range, 0, 0))
+	for x = MAP.low_x, MAP.high_x do
+		for y = MAP.low_y, MAP.high_y do
+			if MAP.cells[x][y].f then
+				MAP.to_render[x] = MAP.to_render[x] or {}
+				MAP.to_render[x][y] = MAP.to_render[x][y] or {}
+				MAP.to_render[x][y].f = true
+				MAP.to_render[x][y].c = true
+			end
+		end
+	end
+	for key, val in ipairs(MAP.objects) do
+		if val.x > MAP.low_x and val.x < MAP.high_x and val.y > MAP.low_y and val.y < MAP.high_y then
+			if not val.go then
+				val.go = factory.create("/map#spawn_object", vmath.vector3(-val.x, val.z - 0.5, val.y - 0.5), vmath.quat(0, 0, 0, 1))
+				go.set_scale(val.scale / 128, val.go)
+			end
+			go.set(val.go, "euler.y", go.get("/camera", "euler.y"))
+			local dist = vmath.length(go.get_world_position("/camera") - go.get_world_position(val.go))
+			local col = math.min(0.8 / dist, 0.5)
+			go.set(msg.url(nil, val.go, "sprite"), "tint", vmath.vector4(col, col, col, 1))
+		elseif val.go then
+			go.delete(val.go)
+			val.go = nil
+		end
+	end
+
+	for key, val in ipairs(MAP.items) do
+		local x, y = get_object_coords(go.get_world_position(val.script_url))
+		if x > MAP.low_x and x < MAP.high_x and y > MAP.low_y and y < MAP.high_y then
+			local z = go.get(val.script_url, "z")
+			if not val.go then
+				val.go = factory.create("/map#spawn_item", vmath.vector3(-x, z - 0.5, y - 0.5), vmath.quat(0, 0, 0, 1))
+				local sprites = {
+					[hash("stone")] = "stone",
+					[hash("mushroom")] = "mushroom"
+				}
+				sprite.play_flipbook(msg.url(nil, val.go, "sprite"), sprites[go.get(val.script_url, "type")])
+				go.set_scale(val.scale / 128, val.go)
+			end
+			go.set(val.go, "euler.y", go.get("/camera", "euler.y"))
+			go.set(val.go, "position", vmath.vector3(-x, z - 0.5, y - 0.5))
+			if key == highlighted then
+				go.set(msg.url(nil, val.go, "sprite"), "tint", vmath.vector4(0, 1, 0, 1))
+			else
+				local dist = vmath.length(go.get_world_position("/camera") - go.get_world_position(val.go))
+				local col = math.min(0.8 / dist, 0.5)
+				go.set(msg.url(nil, val.go, "sprite"), "tint", vmath.vector4(col, col, col, 1))
+			end
+		elseif val.go then
+			go.delete(val.go)
+			val.go = nil
+		end
+	end
+
+	for key, val in ipairs(MAP.actors) do
+		local x, y = get_object_coords(go.get_world_position(val.script_url))
+		if x > MAP.low_x and x < MAP.high_x and y > MAP.low_y and y < MAP.high_y then
+			local z = go.get(val.script_url, "z")
+			if not val.go then
+				val.go = factory.create("/map#spawn_actor", vmath.vector3(-x, z - 0.5, y - 0.5), vmath.quat(0, 0, 0, 1))
+				local sprites = {
+					[hash("zombie")] = "zombie_front",
+				}
+				sprite.play_flipbook(msg.url(nil, val.go, "sprite"), sprites[go.get(val.script_url, "type")])
+				go.set_scale(val.scale / 128, val.go)
+			end
+			go.set(val.go, "euler.y", go.get("/camera", "euler.y"))
+			go.set(val.go, "position", vmath.vector3(-x, z - 0.5, y - 0.5))
+			
+			local angle = math.abs(go.get(msg.url(val.script_url).path, "euler.z") - go.get(".", "euler.z")) % 360
+			angle = math.abs(go.get(msg.url(val.script_url).path, "euler.z") - go.get(".", "euler.z") % 360)
+
+			if angle > 180 then
+				--angle = 360 - angle
+			end
+			print(angle)
+			local sprite_url = msg.url(nil, val.go, "sprite")
+			if angle < 45 or angle > 315 then
+				sprite.play_flipbook(sprite_url, "zombie_front")
+			elseif angle < 135 or angle > 225 then
+				sprite.play_flipbook(sprite_url, "zombie_side")
+			else
+				sprite.play_flipbook(sprite_url, "zombie_back")
+			end
+			--print(go.get(msg.url(val.script_url).path, "euler.z") - go.get(".", "euler.z"))
+
+			sprite.set_hflip(sprite_url, angle > 180)
+			
+			local dist = vmath.length(go.get_world_position("/camera") - go.get_world_position(val.go))
+			local col = math.min(0.8 / dist, 0.5)
+			--go.set(msg.url(nil, val.go, "sprite"), "tint", vmath.vector4(col, col, col, 1))
+		elseif val.go then
+			go.delete(val.go)
+			val.go = nil
+		end
+	end
+	
+	spawn_walls()
+	for x, _ in pairs(MAP.wall_gos) do
+		for y, __ in pairs(_) do
+			for wall_type, val in pairs(__) do
+				if not MAP.to_render[x] or not MAP.to_render[x][y] or not MAP.to_render[x][y][wall_type] then
+					go.delete(val)
+					MAP.wall_gos[x][y][wall_type] = nil
+				else
+					local dist = vmath.length(go.get_world_position("/camera") - go.get_world_position(val))
+					local col = math.min(0.8 / dist, 0.5)
+					go.set(msg.url(nil, val, "sprite"), "tint", vmath.vector4(col, col, col, 1))
+				end
+			end
+		end
+	end
+end
+
+function init(self)
+	math.randomseed(os.time())
+	math.random(); math.random(); math.random()
+	msg.post(".", hash("acquire_input_focus"))
+	player_position = go.get_world_position()
+	switch_map_mode(true)
+
+	MAP.load_map("/map#map")
+	
+	timer.delay(0.1, false, function()
+		find_walls()
+	end)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("contact_point_response") then
+		if message.normal.x == 1 or message.normal.x == -1 then
+			collisions.x = message.normal.x
+		end
+		if message.normal.y == 1 or message.normal.y == -1 then
+			collisions.y = message.normal.y
+		end
+		timer.delay(0, false, function()
+			if message.normal.x ~= 0 then
+				collisions.x = 0
+			end
+			if message.normal.y ~= 0 then
+				collisions.y = 0
+			end
+		end)
+	elseif message_id == hash("object_created") then
+		local x, y = get_object_coords(go.get_world_position(sender))
+		table.insert(MAP.objects, {type = message.type, x = x, y = y, z = message.z, scale = message.scale})
+	elseif message_id == hash("item_created") then
+		local x, y = get_object_coords(go.get_world_position(sender))
+		table.insert(MAP.items, {type = message.type, x = x, y = y, scale = message.scale, script_url = sender})
+	elseif message_id == hash("actor_created") then
+		local x, y = get_object_coords(go.get_world_position(sender))
+		table.insert(MAP.actors, {type = message.type, x = x, y = y, scale = message.scale, script_url = sender})
+	elseif message_id == hash("attack_damage_point") then
+		local angle = math.rad(go.get("/player", "euler.z"))
+		local dir = vmath.rotate(vmath.quat_rotation_z(angle), vmath.vector3(0, -120, 0))
+		local ray = physics.raycast(player_position, player_position + dir, {hash("wall")})
+		if ray then
+			local x, y, wall_type = get_wall_coords(ray.position)
+			MAP.damage(x, y, wall_type, 50)
+		end
+	end
+end
+
+function update(self, dt)
+	find_walls()
+	update_camera()
+end
+
+function on_input(self, action_id, action)
+	local camera_pos = go.get("/camera", "position")
+
+	local closest_distance = 256
+	local closest
+	local player_map_position = go.get_world_position("/player")
+
+	for key, val in ipairs(MAP.items) do
+		if val.go then
+			local world_pos = go.get_world_position(val.go)
+			local pos = RC.world_to_screen(world_pos)
+			local dist = vmath.length(pos - vmath.vector3(action.screen_x, action.screen_y, 0))
+			if dist < 30 then
+				local distance = vmath.length(player_map_position - go.get_world_position(val.script_url.path))
+				if distance < closest_distance then
+					closest_distance = distance
+					closest = key
+				end
+			end
+		end
+	end
+
+	highlighted = closest
+
+	if action_id == hash("switch_camera_mode") and action.pressed then
+		switch_map_mode()
+	elseif action_id == hash("up") then
+		if action.released then
+			go.cancel_animations("/player", "position")
+		else
+			local dir = vmath.rotate(go.get_rotation("/player"), vmath.vector3(0, -player_speed, 0))
+			if collisions.x > 0 and dir.x < 0 then dir.x = 0 end
+			if collisions.x < 0 and dir.x > 0 then dir.x = 0 end
+			if collisions.y > 0 and dir.y < 0 then dir.y = 0 end
+			if collisions.y < 0 and dir.y > 0 then dir.y = 0 end
+			go.animate("/player", "position", go.PLAYBACK_ONCE_FORWARD, go.get_world_position("/player") + dir, go.EASING_LINEAR, 2)
+		end
+	elseif action_id == hash("down") then
+		if action.released then
+			go.cancel_animations("/player", "position")
+		else
+			local dir = vmath.rotate(go.get_rotation("/player"), vmath.vector3(0, player_speed, 0))
+			if collisions.x > 0 and dir.x < 0 then dir.x = 0 end
+			if collisions.x < 0 and dir.x > 0 then dir.x = 0 end
+			if collisions.y > 0 and dir.y < 0 then dir.y = 0 end
+			if collisions.y < 0 and dir.y > 0 then dir.y = 0 end
+			go.animate("/player", "position", go.PLAYBACK_ONCE_FORWARD, go.get_world_position("/player") + dir, go.EASING_LINEAR, 2)
+		end
+	elseif action_id == hash("left") then
+		go.set("/player", "euler.z", go.get("/player", "euler.z") + player_turn_rate)
+	elseif action_id == hash("right") then
+		local camera_euler = go.get("/camera", "euler.y")
+		go.set("/player", "euler.z", go.get("/player", "euler.z") - player_turn_rate)
+	elseif action_id == hash("attack") and action.pressed then
+		msg.post("/hud", hash("attack"))
+	elseif action_id == hash("click") and action.pressed then
+		if highlighted then
+			go.delete(MAP.items[highlighted].script_url.path)
+			go.delete(MAP.items[highlighted].go)
+			table.remove(MAP.items, highlighted)
 		end
 	end
 end

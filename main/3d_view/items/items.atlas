@@ -1,9 +1,0 @@
-images {
-  image: "/graphics/main_view/entities/items/stone.png"
-}
-images {
-  image: "/graphics/main_view/entities/items/mushroom.png"
-}
-margin: 1
-extrude_borders: 1
-inner_padding: 1
