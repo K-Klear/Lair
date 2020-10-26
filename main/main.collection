@@ -102,7 +102,7 @@ instances {
   prototype: "/world/actors/actor_map.go"
   position {
     x: 1474.0
-    y: 799.0
+    y: 800.0
     z: 0.0
   }
   rotation {
