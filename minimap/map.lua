@@ -10,6 +10,7 @@ MAP.wall_gos = {}
 MAP.objects = {}
 MAP.items = {}
 MAP.actors = {}
+MAP.entities = {}
 
 MAP.wall_stats = {
 	{

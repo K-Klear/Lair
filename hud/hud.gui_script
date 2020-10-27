@@ -39,5 +39,7 @@ function on_message(self, message_id, message, sender)
 		--gui.set_text(compass, player.facing)
 	elseif message_id == hash("update_clock") then
 		--gui.set_text(clock, get_time(player.time))
+	elseif message_id == hash("map_switched") then
+		gui.set_enabled(gui.get_node("weapon"), message.map)
 	end
 end

@@ -15,6 +15,14 @@ images {
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 images {
+  image: "/assets/img/entities/objects/slab.png"
+  sprite_trim_mode: SPRITE_TRIM_MODE_OFF
+}
+images {
+  image: "/assets/img/entities/objects/stalactite.png"
+  sprite_trim_mode: SPRITE_TRIM_MODE_OFF
+}
+images {
   image: "/assets/img/entities/items/mushroom.png"
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
@@ -23,11 +31,7 @@ images {
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 images {
-  image: "/assets/img/entities/objects/slab.png"
-  sprite_trim_mode: SPRITE_TRIM_MODE_OFF
-}
-images {
-  image: "/assets/img/entities/objects/stalagtite.png"
+  image: "/assets/img/entities/objects/map_screen.png"
   sprite_trim_mode: SPRITE_TRIM_MODE_OFF
 }
 margin: 1

@@ -27,6 +27,3 @@ max_count = 512
 default_texture_mag_filter = nearest
 default_texture_min_filter = nearest
 
-[input]
-game_binding = /builtins/input/all.input_bindingc
-

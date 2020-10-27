@@ -2,8 +2,8 @@ embedded_components {
   id: "sprite"
   type: "sprite"
   data: "tile_set: \"/world/entities.atlas\"\n"
-  "default_animation: \"stalagtite\"\n"
-  "material: \"/builtins/materials/sprite.material\"\n"
+  "default_animation: \"stalactite\"\n"
+  "material: \"/materials/sprite.material\"\n"
   "blend_mode: BLEND_MODE_ALPHA\n"
   ""
   position {

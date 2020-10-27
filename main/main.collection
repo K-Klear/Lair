@@ -1,6 +1,6 @@
 name: "main"
 instances {
-  id: "camera"
+  id: "camera_map"
   prototype: "/rendercam/camera.go"
   position {
     x: 480.0
@@ -17,7 +17,7 @@ instances {
     id: "script"
     properties {
       id: "active"
-      value: "true"
+      value: "false"
       type: PROPERTY_TYPE_BOOLEAN
     }
     properties {
@@ -101,8 +101,8 @@ instances {
   id: "actor_map"
   prototype: "/world/actors/actor_map.go"
   position {
-    x: 1474.0
-    y: 800.0
+    x: 458.0
+    y: 306.0
     z: 0.0
   }
   rotation {
@@ -122,6 +122,104 @@ instances {
   scale3 {
     x: 1.0
     y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "target"
+  prototype: "/world/target.go"
+  position {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "camera_3d"
+  prototype: "/rendercam/camera.go"
+  position {
+    x: 480.0
+    y: 320.0
+    z: 500.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  component_properties {
+    id: "script"
+    properties {
+      id: "active"
+      value: "true"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "orthographic"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+    properties {
+      id: "nearZ"
+      value: "0.01"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "farZ"
+      value: "2000.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "viewDistance"
+      value: "600.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "fov"
+      value: "65.0"
+      type: PROPERTY_TYPE_NUMBER
+    }
+    properties {
+      id: "fixedAspectRatio"
+      value: "false"
+      type: PROPERTY_TYPE_BOOLEAN
+    }
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "screen"
+  prototype: "/world/objects/screen.go"
+  position {
+    x: 10.0
+    y: 10.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.6532815
+    y: -0.27059805
+    z: -0.27059805
+    w: 0.6532815
+  }
+  scale3 {
+    x: 0.25
+    y: 0.25
     z: 1.0
   }
 }
@@ -396,8 +494,8 @@ embedded_instances {
   "}\n"
   ""
   position {
-    x: 0.0
-    y: 0.0
+    x: -1430.0
+    y: 55.0
     z: 0.0
   }
   rotation {

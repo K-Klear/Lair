@@ -16,5 +16,5 @@ function init(self)
 	if self.z > self.floor then
 		go.animate("#", "z", go.PLAYBACK_ONCE_FORWARD, self.floor, go.EASING_OUTBOUNCE, (self.z - self.floor) * 3)
 	end
-	msg.post("/player#main", hash("item_created"), {type = self.type, z = self.z, scale = self.scale})
+	msg.post("/player#main", hash("entity_created"), {class = hash("item"), type = self.type, scale = self.scale, selectable = true})
 end
