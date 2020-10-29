@@ -332,7 +332,7 @@ end
 -- ---------------------------------------------------------------------------------
 
 function M.screen_to_viewport(x, y, delta)
-	local viewport_main = {x = M.viewport.width * 33 / 1280, y = M.viewport.height * 256 / 1024, width = M.viewport.width * 1216 / 1280, height = M.viewport.height * 736 / 1024}
+	local viewport_main = {x = 0, y = 0, width = M.viewport.width, height = M.viewport.height}
 	if delta then
 		x = x / viewport_main.scale.x
 		y = y / viewport_main.scale.y
@@ -383,7 +383,7 @@ function M.screen_to_world_ray(x, y, raw, cam)
 
 	-- Remap coordinates to range -1 to 1
 
-	local window_new = vmath.vector3(M.window.x * 1216 / 1280, M.window.y * 736 / 1024, 0)
+	local window_new = vmath.vector3(M.window.x, M.window.y, 0)
 
 	local x1 = (x - M.window.x * 0.5) / M.window.x * 2
 	local y1 = (y - M.window.y * 0.5) / M.window.y * 2
@@ -427,7 +427,7 @@ function M.screen_to_gui_pick(x, y)
 end
 
 function M.world_to_screen(pos, adjust, raw, cam)
-	local viewport_main = {x = M.viewport.width * 33 / 1280, y = M.viewport.height * 256 / 1024, width = M.viewport.width * 1216 / 1280, height = M.viewport.height * 736 / 1024}
+	local viewport_main = {x = 0, y = 0, width = M.viewport.width, height = M.viewport.height}
 	
 	local m = M.proj[cam] * M.view[cam]
 	pv.x, pv.y, pv.z, pv.w = pos.x, pos.y, pos.z, 1

@@ -204,22 +204,58 @@ instances {
   }
 }
 instances {
-  id: "screen"
-  prototype: "/world/objects/screen.go"
+  id: "screen_map"
+  prototype: "/world/objects/screen_map.go"
   position {
-    x: 10.0
-    y: 10.0
+    x: 639.0
+    y: 257.0
     z: 0.0
   }
   rotation {
-    x: 0.6532815
-    y: -0.27059805
-    z: -0.27059805
-    w: 0.6532815
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  component_properties {
+    id: "screen"
+    properties {
+      id: "facing"
+      value: "w"
+      type: PROPERTY_TYPE_HASH
+    }
   }
   scale3 {
-    x: 0.25
-    y: 0.25
+    x: 1.0
+    y: 1.0
+    z: 1.0
+  }
+}
+instances {
+  id: "screen_map1"
+  prototype: "/world/objects/screen_map.go"
+  position {
+    x: 704.0
+    y: 385.0
+    z: 0.0
+  }
+  rotation {
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0
+  }
+  component_properties {
+    id: "screen"
+    properties {
+      id: "facing"
+      value: "n"
+      type: PROPERTY_TYPE_HASH
+    }
+  }
+  scale3 {
+    x: 1.0
+    y: 1.0
     z: 1.0
   }
 }
@@ -357,6 +393,24 @@ embedded_instances {
   "    w: 1.0\n"
   "  }\n"
   "}\n"
+  "embedded_components {\n"
+  "  id: \"spawn_screen\"\n"
+  "  type: \"factory\"\n"
+  "  data: \"prototype: \\\"/world/objects/screen.go\\\"\\n"
+  "load_dynamically: false\\n"
+  "\"\n"
+  "  position {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "  }\n"
+  "  rotation {\n"
+  "    x: 0.0\n"
+  "    y: 0.0\n"
+  "    z: 0.0\n"
+  "    w: 1.0\n"
+  "  }\n"
+  "}\n"
   ""
   position {
     x: 0.0
@@ -461,7 +515,7 @@ embedded_instances {
   position {
     x: 319.0
     y: 321.0
-    z: 0.0
+    z: 1.0
   }
   rotation {
     x: 0.0

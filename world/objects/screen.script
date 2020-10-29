@@ -1,0 +1,17 @@
+go.property("type", hash("screen"))
+go.property("z", 0.4)
+go.property("scale", vmath.vector3(32))
+go.property("facing", hash("n"))
+
+function init(self)
+	local facings = {
+		[hash("w")] = vmath.vector3(90, 0, -90),
+		[hash("e")] = vmath.vector3(90, 0, 90), --
+		[hash("s")] = vmath.vector3(90, 0, 0), --
+		[hash("n")] = vmath.vector3(90, 0, -180),
+	}
+	
+	msg.post("/player#main", hash("entity_created"), {
+		class = hash("screen"), type = self.type, scale = self.scale, facing = facings[self.facing], selectable = true
+	})
+end

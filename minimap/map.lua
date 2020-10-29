@@ -95,7 +95,7 @@ function MAP.destroy_wall(x, y, wall_type)
 	end
 	for type, count in pairs(MAP.wall_stats[MAP.cells[x][y].type].debris) do
 		for i = 1, count do
-			factory.create("/map#spawn_item_map", vmath.vector3((x - math.random()) * 128, (y - math.random()) * 128, 0), nil, {type = type, z = 0.8 * math.random()})
+			factory.create("/map#spawn_item_map", vmath.vector3((x - math.random()) * 128, (y - math.random()) * 128, 0), vmath.quat(), {type = type, z = 0.8 * math.random()})
 		end
 	end
 	tilemap.set_tile(MAP.map_url, "walls", x, y, 0)
